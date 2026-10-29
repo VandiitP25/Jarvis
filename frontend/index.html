@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS | Personal AI Workspace</title>
+<style>
+
+:root{color-scheme:dark;--bg:#061326;--panel:rgba(8,25,48,.78);--panel2:rgba(12,36,66,.72);--cyan:#79d8ff;--blue:#438fff;--muted:#9bb4d2;--line:rgba(112,190,255,.24);--white:#edf6ff;--green:#72e8c4}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,"Segoe UI",Arial,sans-serif;color:var(--white);background:#061326}body{min-height:100vh;background:radial-gradient(ellipse at 53% 42%,rgba(34,108,177,.25),transparent 38%),linear-gradient(130deg,#040b17,#0b2341 52%,#050d1b);overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.17;background-image:linear-gradient(rgba(130,199,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(130,199,255,.07) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(ellipse at center,#000,transparent 85%)}
+button,input,select{font:inherit}button{cursor:pointer}.shell{position:relative;z-index:1;min-height:100vh;display:grid;grid-template-columns:226px minmax(0,1fr)}
+.sidebar{position:sticky;top:0;height:100vh;padding:24px 14px;background:rgba(3,12,25,.83);border-right:1px solid var(--line);backdrop-filter:blur(18px);display:flex;flex-direction:column;gap:25px}.brand{display:flex;align-items:center;gap:12px;padding:2px 8px 15px}.brand-orb{width:42px;height:42px;border-radius:50%;border:2px solid var(--cyan);box-shadow:0 0 14px #2d9dff,inset 0 0 12px #2d9dff;position:relative}.brand-orb:after{content:"";position:absolute;inset:5px;border:1px solid #b3f1ff;border-radius:50%}.brand-name{font-size:20px;letter-spacing:7px;font-weight:300}.brand-sub{font-size:10px;color:var(--muted);letter-spacing:1.5px;margin-top:4px}.nav{display:grid;gap:6px}.nav button{display:flex;align-items:center;gap:13px;text-align:left;border:1px solid transparent;background:transparent;color:#c5d7ee;border-radius:10px;padding:11px 13px;font-size:13px;transition:.2s}.nav button .ico{width:20px;text-align:center;font-size:17px;color:#a9c5e8}.nav button:hover,.nav button.active{background:linear-gradient(100deg,rgba(48,135,218,.28),rgba(48,135,218,.08));border-color:rgba(94,179,255,.22);color:white}.nav button.active .ico{color:var(--cyan)}.sidebar-bottom{margin-top:auto;color:#718eaf;font-size:10px;line-height:1.7;padding:10px}
+.workspace{min-width:0;padding:0 24px 18px;display:grid;grid-template-rows:82px auto;gap:18px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;border-bottom:1px solid var(--line);min-width:0}.date-block{color:#a9c4e4;font-size:11px}.clock{font-size:27px;letter-spacing:4px;color:#eaf6ff;margin-top:3px}.motto{font-size:10px;color:#a9c4e4;letter-spacing:1px;margin-top:2px}.top-right{display:flex;align-items:center;gap:22px;color:#a9c9eb;font-size:12px}.weather{display:flex;align-items:center;gap:10px}.weather-icon{font-size:24px}.weather strong{display:block;font-size:17px;color:#edf6ff;font-weight:500}.weather small{color:var(--muted)}.profile{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#173354;border:1px solid var(--line);font-size:20px}
+.dashboard{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;align-items:start}.main-column{min-width:0}.hero{min-height:405px;position:relative;overflow:hidden;border-radius:18px;border:1px solid rgba(120,190,255,.18);background:linear-gradient(180deg,rgba(7,20,39,.13),rgba(4,15,31,.82)),radial-gradient(ellipse at 50% 40%,rgba(43,112,192,.28),transparent 38%),linear-gradient(135deg,#102e50,#0b1c33 60%,#071326);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px 22px 24px;text-align:center}
+.hero:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(3,12,25,.65)),radial-gradient(ellipse at 20% 100%,rgba(41,119,182,.22),transparent 40%);pointer-events:none}.hero-grid{position:absolute;inset:0;opacity:.24;background-image:linear-gradient(rgba(126,192,255,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(126,192,255,.09) 1px,transparent 1px);background-size:36px 36px;mask-image:linear-gradient(transparent,#000 55%,transparent)}
+.core-stage{height:190px;width:100%;display:grid;place-items:center;position:relative;isolation:isolate}.core-stage:before{content:"";position:absolute;width:174px;aspect-ratio:1;border:1px solid rgba(113,213,255,.45);border-radius:50%;box-shadow:0 0 30px rgba(63,159,255,.18),inset 0 0 24px rgba(63,159,255,.1);background:repeating-conic-gradient(from 0deg,rgba(113,213,255,.32) 0deg 1deg,transparent 1deg 14deg);mask:radial-gradient(circle,transparent 58%,#000 59%,#000 61%,transparent 62%);animation:spin 55s linear infinite}.core-stage:after{content:"";position:absolute;width:205px;height:95px;border:1px solid rgba(117,195,255,.45);border-radius:50%;transform:rotate(-25deg);box-shadow:0 0 20px rgba(64,150,255,.12)}.orb{width:116px;aspect-ratio:1;border-radius:50%;position:relative;display:grid;place-items:center;z-index:2;border:2px solid #8ae9ff;background:radial-gradient(circle,rgba(111,221,255,.3),rgba(52,116,255,.16) 48%,transparent 72%);box-shadow:0 0 18px rgba(93,198,255,.65),inset 0 0 24px rgba(97,178,255,.35);animation:breathe 4s ease-in-out infinite}.orb:before,.orb:after{content:"";position:absolute;inset:-12px;border:1px solid #79cfff;border-left-color:transparent;border-right-color:transparent;border-radius:50%;animation:spin 8s linear infinite}.orb:after{inset:-22px;border-color:rgba(125,155,255,.7);border-top-color:transparent;border-bottom-color:transparent;animation-direction:reverse;animation-duration:13s}.orb-core{width:45%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 28%,#fff,#9deeff 16%,#559eff 45%,#352f9d 76%,#07152a);box-shadow:0 0 24px #66d8ff,0 0 52px rgba(89,121,255,.6)}.orb.listening{filter:hue-rotate(50deg) brightness(1.25)}.orb.speaking{filter:brightness(1.4)}@keyframes spin{to{transform:rotate(360deg)}}@keyframes breathe{50%{transform:scale(1.035);box-shadow:0 0 38px rgba(98,198,255,.5),inset 0 0 32px rgba(98,178,255,.3)}}.core-label{position:absolute;bottom:0;left:0;right:0;font-size:9px;letter-spacing:2.5px;color:var(--cyan)}
+.hero h1{position:relative;font-size:clamp(25px,3vw,34px);font-weight:400;margin:8px 0 6px;letter-spacing:-.6px}.hero .subheading{position:relative;color:#c6d9ef;font-size:15px;margin:0 0 22px}.command-wrap{position:relative;width:min(100%,660px);display:flex;align-items:center;gap:10px;border:1px solid rgba(106,190,255,.65);border-radius:40px;padding:7px;background:rgba(18,48,83,.84);box-shadow:0 8px 28px rgba(0,0,0,.2),0 0 20px rgba(58,149,255,.09)}.command-wrap input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:white;padding:11px 8px;font-size:13px}.command-wrap input::placeholder{color:#9db8dc}.round-btn{flex:0 0 38px;width:38px;height:38px;border:0;border-radius:50%;display:grid;place-items:center;color:#eaf7ff;background:rgba(108,169,255,.18);font-size:17px}.round-btn:hover{background:rgba(108,190,255,.32)}.quick-actions{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:15px}.quick-actions button{padding:10px 14px;border:1px solid rgba(107,184,255,.36);border-radius:24px;background:rgba(4,17,34,.38);color:#cfe2f9;font-size:11px}.quick-actions button:hover{background:rgba(61,142,224,.2);border-color:#79d8ff}
+.lower-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}.panel{min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:15px;overflow:hidden;backdrop-filter:blur(14px);box-shadow:0 12px 30px rgba(0,0,0,.12)}.panel-title{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 16px;border-bottom:1px solid rgba(112,190,255,.17);font-size:13px;font-weight:600}.panel-title span{color:#a9c9eb;font-weight:400;font-size:11px}.task-controls{display:flex;gap:7px;padding:12px}.task-controls input,.chat-form input{min-width:0;width:100%;background:rgba(3,13,28,.65);border:1px solid var(--line);border-radius:9px;padding:11px;color:white;outline:0}.task-controls input:focus,.chat-form input:focus{border-color:var(--cyan)}.btn{border:1px solid rgba(109,190,255,.4);border-radius:9px;padding:10px 13px;background:rgba(51,127,205,.16);color:#d9eeff}.btn:hover{background:rgba(51,127,205,.32)}.btn.primary{background:rgba(63,145,230,.26);white-space:nowrap}.task-list{padding:0 14px 10px}.task{display:flex;align-items:center;gap:9px;padding:11px 0;border-bottom:1px solid rgba(112,190,255,.1);font-size:12px}.task:last-child{border-bottom:0}.task input{width:auto;accent-color:var(--cyan)}.task span{flex:1;overflow-wrap:anywhere}.task.done span{text-decoration:line-through;color:#7894b5}.task .remove-task{background:transparent;border:0;color:#8ba6c6;font-size:16px}.messages{padding:12px 14px;min-height:110px;max-height:250px;overflow:auto}.message{padding:11px 12px;margin-bottom:9px;border-radius:9px;line-height:1.55;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;background:rgba(57,136,207,.1);border:1px solid rgba(112,190,255,.12)}.message.assistant{border-left:2px solid var(--cyan)}.message.user{border-left:2px solid var(--blue);background:rgba(60,115,220,.13)}.message-label{color:var(--cyan);font-size:9px;letter-spacing:1.4px;margin-bottom:5px}.chat-form{padding:12px;border-top:1px solid rgba(112,190,255,.14)}.input-row{display:flex;gap:7px}.hint{font-size:10px;line-height:1.6;color:#8faaca;margin:8px 2px 0}.right-column{display:grid;gap:16px;min-width:0}.panel-content{padding:0 15px 8px}.schedule-item,.file-item{display:flex;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid rgba(112,190,255,.1);font-size:12px}.schedule-item:last-child,.file-item:last-child{border:0}.schedule-dot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#66caff;box-shadow:0 0 9px rgba(102,202,255,.4)}.item-main{min-width:0;flex:1}.item-main strong{display:block;font-weight:500;overflow-wrap:anywhere}.item-main small{display:block;color:#89a8cd;font-size:10px;margin-top:4px}.item-time{font-size:10px;color:#9cb5d6;white-space:nowrap}.empty-state{font-size:11px;color:#89a8cd;padding:16px 0}.voice-controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:12px 15px;border-top:1px solid rgba(112,190,255,.14)}.voice-controls label{font-size:10px;color:#9cb5d6}.voice-controls select{flex:1;min-width:130px;padding:9px;background:#0b1c32;color:white;border:1px solid var(--line);border-radius:8px}.footer{text-align:center;color:#718eaf;font-size:9px;letter-spacing:1.5px;padding:18px 0 2px}
+@media(max-width:1120px){.shell{grid-template-columns:190px minmax(0,1fr)}.workspace{padding:0 16px 16px}.dashboard{grid-template-columns:minmax(0,1fr) 280px}.nav button{padding:10px}.quick-actions button{padding:9px 11px}}
+@media(max-width:900px){.shell{grid-template-columns:68px minmax(0,1fr)}.sidebar{padding:18px 8px}.brand{justify-content:center;padding:0 0 12px}.brand-copy,.nav-label,.sidebar-bottom{display:none}.nav button{justify-content:center;padding:12px 6px}.nav button .ico{width:auto}.dashboard{grid-template-columns:1fr}.right-column{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{min-height:380px}.top-right{gap:12px}}
+@media(max-width:600px){.shell{grid-template-columns:1fr}.sidebar{position:sticky;z-index:5;top:0;height:auto;padding:8px;background:rgba(3,12,25,.96);border-right:0;border-bottom:1px solid var(--line)}.brand{display:none}.nav{display:flex;overflow-x:auto;gap:4px}.nav button{flex:0 0 auto;padding:9px 11px}.nav-label{display:inline;font-size:11px}.nav button .ico{font-size:15px}.workspace{padding:0 10px 12px;grid-template-rows:auto auto;gap:12px}.topbar{padding:13px 2px;min-height:74px}.clock{font-size:22px}.motto{display:none}.top-right{gap:8px}.weather{font-size:10px}.weather-icon{font-size:19px}.profile{width:33px;height:33px}.dashboard{gap:12px}.hero{min-height:375px;padding:18px 12px}.core-stage{height:160px}.hero h1{font-size:25px}.hero .subheading{font-size:13px}.command-wrap{gap:4px}.command-wrap input{font-size:12px;padding:10px 4px}.round-btn{width:34px;height:34px;flex-basis:34px}.quick-actions{gap:6px}.quick-actions button{font-size:10px;padding:8px 10px}.lower-grid,.right-column{grid-template-columns:1fr}.panel-title{padding:13px}.messages{max-height:220px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
+
+</style>
+</head>
+
+<body>
+<div class="shell">
+  <aside class="sidebar" aria-label="Main navigation">
+    <div class="brand"><div class="brand-orb" aria-hidden="true"></div><div class="brand-copy"><div class="brand-name">JARVIS</div><div class="brand-sub">Personal Assistant</div></div></div>
+    <nav class="nav">
+      <button class="active" type="button" data-section="home"><span class="ico">⌂</span><span class="nav-label">Home</span></button>
+      <button type="button" data-section="files"><span class="ico">▱</span><span class="nav-label">Files &amp; Notes</span></button>
+      <button type="button" data-section="obsidian"><span class="ico">◈</span><span class="nav-label">Obsidian</span></button>
+      <button type="button" data-section="browser"><span class="ico">◎</span><span class="nav-label">Browser</span></button>
+      <button type="button" data-section="research"><span class="ico">⌕</span><span class="nav-label">Research</span></button>
+      <button type="button" data-section="calendar"><span class="ico">▦</span><span class="nav-label">Calendar</span></button>
+      <button type="button" data-section="reminders"><span class="ico">♧</span><span class="nav-label">Reminders</span></button>
+      <button type="button" data-section="apps"><span class="ico">▦</span><span class="nav-label">Applications</span></button>
+      <button type="button" data-section="settings"><span class="ico">⚙</span><span class="nav-label">Settings</span></button>
+    </nav>
+    <div class="sidebar-bottom">LOCAL MODE<br>Private by default<br>AI provider not connected</div>
+  </aside>
+  <main class="workspace">
+    <header class="topbar">
+      <div class="date-block"><div id="dateLabel">YOUR PERSONAL WORKSPACE</div><div class="clock" id="clock">--:--</div><div class="motto">Small steps. Big discoveries.</div></div>
+      <div class="top-right"><div class="weather"><span class="weather-icon">☼</span><div><strong>LOCAL</strong><small>System status</small></div></div><div class="profile" title="Personal assistant">♙</div></div>
+    </header>
+    <div class="dashboard" id="homeSection">
+      <div class="main-column">
+        <section class="hero">
+          <div class="hero-grid"></div>
+          <div class="core-stage"><div class="orb" id="orb" aria-label="Animated Jarvis core"><div class="orb-core"></div></div><div class="core-label" id="coreLabel">AWAITING YOUR COMMAND</div></div>
+          <h1 id="greeting">Good day. </h1><p class="subheading">How can I help you today?</p>
+          <form id="chatForm" class="command-wrap">
+            <button class="round-btn" type="button" id="micButton" title="Use voice input" aria-label="Use voice input">🎙</button>
+            <input id="commandInput" placeholder="Ask JARVIS anything..." autocomplete="off" aria-label="Your command">
+            <button class="round-btn" type="submit" aria-label="Send message">➜</button>
+          </form>
+          <div class="quick-actions">
+            <button type="button" data-action="file">▱ &nbsp; Open file</button>
+            <button type="button" data-action="web">⌕ &nbsp; Search web</button>
+            <button type="button" data-action="summarize">▤ &nbsp; Summarize</button>
+            <button type="button" data-action="reminder">♧ &nbsp; Set reminder</button>
+            <button type="button" data-action="obsidian">◈ &nbsp; Open Obsidian</button>
+          </div>
+        </section>
+        <div class="lower-grid">
+          <section class="panel">
+            <div class="panel-title">⚡ Quick access <span>LOCAL TOOLS</span></div>
+            <div class="panel-content">
+              <div class="file-item"><span class="schedule-dot"></span><div class="item-main"><strong>Task manager</strong><small>Tasks stored in this browser</small></div></div>
+              <div class="file-item"><span class="schedule-dot"></span><div class="item-main"><strong>Voice controls</strong><small>Browser speech synthesis</small></div></div>
+              <div class="voice-controls"><label for="voiceSelect">JARVIS VOICE</label><select id="voiceSelect"><option value="">Loading available voices...</option></select><button type="button" class="btn" id="testVoiceButton">Test voice</button></div>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-title">◷ Recent activity <span>SESSION</span></div>
+            <div class="messages" id="messages" aria-live="polite">
+              <div class="message assistant"><div class="message-label">JARVIS · LOCAL MODE</div>Hello! I'm your local JARVIS prototype. I can manage a basic task list and tell you the time. Nebius AI is not connected yet.</div>
+            </div>
+            <form class="chat-form" id="taskForm">
+              <div class="input-row"><input id="taskInput" placeholder="Add a task..." aria-label="New task"><button class="btn primary" type="submit">+ Add</button></div>
+              <p class="hint">Try: “help”, “add task prepare demo”, “show tasks”.</p>
+            </form>
+          </section>
+        </div>
+      </div>
+      <aside class="right-column">
+        <section class="panel tasks-panel"><div class="panel-title">▤ Today's tasks <span id="taskCount">0 open</span></div><div class="task-list" id="taskList"></div></section>
+        <section class="panel"><div class="panel-title">▦ Calendar &amp; schedule <span>LOCAL</span></div><div class="panel-content"><div class="empty-state">No calendar integration is connected yet.</div></div></section>
+        <section class="panel"><div class="panel-title">▱ Recent files <span>LOCAL</span></div><div class="panel-content"><div class="empty-state">File history is not available in this prototype yet.</div></div></section>
+      </aside>
+    </div>
+    <div class="footer"><span id="systemStatus">LOCAL SYSTEM READY</span> &nbsp; · &nbsp; JARVIS — Always with you · Nebius AI not connected</div>
+  </main>
+</div>
+<script>
+
+    const $ = (id) => document.getElementById(id);
+    const STORAGE_KEY = "jarvis-prototype-tasks-v1";
+    let tasks = loadTasks();
+
+    function loadTasks() {
+      try {
+        const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        return Array.isArray(data) ? data : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveTasks() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      } catch {
+        addMessage("I couldn't save tasks in this browser. Check your browser storage settings.", "assistant");
+      }
+      renderTasks();
+    }
+
+    function renderTasks() {
+      const list = $("taskList");
+      list.replaceChildren();
+      const openCount = tasks.filter(task => !task.done).length;
+      $("taskCount").textContent = openCount;
+
+      if (tasks.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "No tasks yet. Add one above or tell Jarvis to add a task.";
+        list.appendChild(empty);
+        return;
+      }
+
+      tasks.forEach(task => {
+        const row = document.createElement("div");
+        row.className = "task" + (task.done ? " done" : "");
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = task.done;
+        checkbox.setAttribute("aria-label", "Mark task complete");
+        checkbox.addEventListener("change", () => {
+          task.done = checkbox.checked;
+          saveTasks();
+        });
+
+        const label = document.createElement("span");
+        label.textContent = task.text;
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "delete-task";
+        remove.textContent = "×";
+        remove.title = "Delete task";
+        remove.setAttribute("aria-label", "Delete " + task.text);
+        remove.addEventListener("click", () => {
+          tasks = tasks.filter(item => item.id !== task.id);
+          saveTasks();
+        });
+
+        row.append(checkbox, label, remove);
+        list.appendChild(row);
+      });
+    }
+
+    function addTask(text) {
+      const clean = text.trim();
+      if (!clean) return false;
+      tasks.unshift({ id: Date.now() + Math.random(), text: clean, done: false });
+      saveTasks();
+      return true;
+    }
+
+    function addMessage(text, role) {
+      const box = document.createElement("div");
+      box.className = "message " + role;
+
+      const label = document.createElement("div");
+      label.className = "message-label";
+      label.textContent = role === "user" ? "YOU" : "JARVIS · LOCAL MODE";
+
+      const content = document.createElement("div");
+      content.textContent = text;
+
+      box.append(label, content);
+      $("messages").appendChild(box);
+      $("messages").scrollTop = $("messages").scrollHeight;
+
+      if (role === "assistant") {
+        speakText(text);
+      }
+    }
+
+    // Text-to-speech voice controls. Keep these declarations outside speakText().
+    const voiceSelect = $("voiceSelect");
+    const testVoiceButton = $("testVoiceButton");
+    let availableVoices = [];
+
+    function loadVoices() {
+      if (!("speechSynthesis" in window) || !voiceSelect || !testVoiceButton) {
+        if (voiceSelect) voiceSelect.innerHTML = "<option value=''>Speech not supported</option>";
+        if (testVoiceButton) testVoiceButton.disabled = true;
+        return;
+      }
+
+      availableVoices = window.speechSynthesis.getVoices();
+      const previousVoice = localStorage.getItem("jarvis-selected-voice");
+      voiceSelect.replaceChildren();
+
+      const sortedVoices = [...availableVoices].sort((a, b) => {
+        const aUS = a.lang.toLowerCase() === "en-us" ? 0 : 1;
+        const bUS = b.lang.toLowerCase() === "en-us" ? 0 : 1;
+        return aUS - bUS || a.name.localeCompare(b.name);
+      });
+
+      sortedVoices.forEach((voice) => {
+        const option = document.createElement("option");
+        option.value = voice.name;
+        option.textContent = `${voice.name} (${voice.lang})`;
+        voiceSelect.appendChild(option);
+      });
+
+      if (sortedVoices.some((voice) => voice.name === previousVoice)) {
+        voiceSelect.value = previousVoice;
+      } else {
+        const preferred = sortedVoices.find((voice) =>
+          voice.lang.toLowerCase() === "en-us" &&
+          /\b(david|guy|christopher|eric|roger|mark|alex)\b/i.test(voice.name)
+        );
+        const american = sortedVoices.find(
+          (voice) => voice.lang.toLowerCase() === "en-us"
+        );
+        if (preferred || american) {
+          voiceSelect.value = (preferred || american).name;
+        }
+      }
+
+      if (sortedVoices.length === 0) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "Waiting for browser voices…";
+        voiceSelect.appendChild(option);
+      }
+    }
+
+    function speakText(text) {
+      if (
+        !("speechSynthesis" in window) ||
+        !("SpeechSynthesisUtterance" in window)
+      ) {
+        console.warn("Text-to-speech is not supported in this browser.");
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(String(text));
+      const selectedVoice = availableVoices.find(
+        (voice) => voice.name === voiceSelect.value
+      );
+
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        utterance.lang = selectedVoice.lang;
+      } else {
+        utterance.lang = "en-US";
+      }
+
+      // Slower pace and lower pitch for a calmer, cinematic delivery.
+      utterance.rate = 0.88;
+      utterance.pitch = 0.72;
+      utterance.volume = 1;
+
+      utterance.onstart = () => {
+        $("orb").classList.add("speaking");
+        $("coreLabel").textContent = "JARVIS IS SPEAKING";
+        $("systemStatus").textContent = "VOICE RESPONSE ACTIVE";
+      };
+
+      const finishSpeaking = () => {
+        $("orb").classList.remove("speaking");
+        $("coreLabel").textContent = "AWAITING YOUR COMMAND";
+        $("systemStatus").textContent = "LOCAL SYSTEM READY";
+      };
+
+      utterance.onend = finishSpeaking;
+      utterance.onerror = (event) => {
+        finishSpeaking();
+        console.warn("Speech error:", event.error);
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    loadVoices();
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
+    }
+
+    voiceSelect.addEventListener("change", () => {
+      localStorage.setItem("jarvis-selected-voice", voiceSelect.value);
+    });
+
+    testVoiceButton.addEventListener("click", () => {
+      if (!availableVoices.length) loadVoices();
+      speakText("Good day. All systems are standing by. How may I assist you?");
+    });
+
+    function localReply(raw) {
+      const command = raw.trim();
+      const lower = command.toLowerCase();
+
+      if (/^(help|commands|\?)$/.test(lower)) {
+        return "Here are the commands I can handle locally:\n• add task followed by a description\n• show tasks\n• clear completed tasks\n• what time is it?\n\nNebius-powered AI conversations will be enabled after API access is configured.";
+      }
+
+      if (lower.startsWith("add task ")) {
+        const taskText = command.slice(9).trim();
+        if (!taskText) return "Please tell me what task you'd like to add.";
+        addTask(taskText);
+        return 'Task added: "' + taskText + '"';
+      }
+
+      if (lower === "show tasks" || lower === "list tasks" || lower === "my tasks") {
+        if (!tasks.length) return "You don't have any tasks yet.";
+        return tasks.map((task, i) =>
+          (i + 1) + ". [" + (task.done ? "x" : " ") + "] " + task.text
+        ).join("\n");
+      }
+
+      if (lower === "clear completed tasks") {
+        const before = tasks.length;
+        tasks = tasks.filter(task => !task.done);
+        saveTasks();
+        return before === tasks.length
+          ? "There are no completed tasks to clear."
+          : "Completed tasks cleared.";
+      }
+
+      if (lower.includes("what time") || lower === "time" || lower.includes("current time")) {
+        return "The local time is " + new Date().toLocaleTimeString() + ".";
+      }
+
+      if (lower === "hello" || lower.startsWith("hello ") || lower === "hi" || lower.startsWith("hey")) {
+        return "Hello! I'm ready to help with local tasks. Try typing “help” to see what I can do. My full AI brain isn't connected yet.";
+      }
+
+      return "I received your command, but my Nebius AI brain isn't connected yet, so I can't answer general questions reliably. You can try “help”, “add task prepare demo”, or “show tasks”.";
+    }
+
+    $("chatForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const input = $("commandInput");
+      const text = input.value.trim();
+      if (!text) return;
+      addMessage(text, "user");
+      input.value = "";
+      $("coreLabel").textContent = "PROCESSING LOCAL COMMAND";
+      $("systemStatus").textContent = "LOCAL COMMAND";
+      const reply = localReply(text);
+      window.setTimeout(() => {
+        addMessage(reply, "assistant");
+        $("coreLabel").textContent = "AWAITING YOUR COMMAND";
+        $("systemStatus").textContent = "LOCAL SYSTEM READY";
+      }, 180);
+    });
+
+    $("taskForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const input = $("taskInput");
+      if (addTask(input.value)) {
+        addMessage('Task added: "' + input.value.trim() + '"', "assistant");
+        input.value = "";
+      }
+    });
+
+    function updateClock() {
+      $("clock").textContent = new Date().toLocaleTimeString([], {
+        hour: "2-digit", minute: "2-digit"
+      });
+    }
+    updateClock();
+    window.setInterval(updateClock, 1000);
+    renderTasks();
+
+    // Voice recognition support depends on the browser and microphone permission.
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.addEventListener("start", () => {
+        $("orb").classList.add("listening");
+        $("coreLabel").textContent = "LISTENING";
+        $("systemStatus").textContent = "MICROPHONE ACTIVE";
+        $("micButton").textContent = "Listening…";
+      });
+
+      recognition.addEventListener("result", (event) => {
+        $("commandInput").value = event.results[0][0].transcript;
+        $("chatForm").requestSubmit();
+      });
+
+      recognition.addEventListener("end", () => {
+        $("orb").classList.remove("listening");
+        $("coreLabel").textContent = "AWAITING YOUR COMMAND";
+        $("systemStatus").textContent = "LOCAL SYSTEM READY";
+        $("micButton").textContent = "🎙";
+      });
+
+      recognition.addEventListener("error", (event) => {
+        addMessage("Voice input error: " + event.error + ". Check microphone permission and try again.", "assistant");
+      });
+    }
+
+    $("micButton").addEventListener("click", () => {
+      if (!recognition) {
+        addMessage("Voice recognition isn't supported in this browser. Try a current version of Chrome or Edge, or type your command.", "assistant");
+        return;
+      }
+      try {
+        recognition.start();
+      } catch {
+        addMessage("Voice input is already starting. Please try again in a moment.", "assistant");
+      }
+    });
+  
+// Personalize the greeting and keep navigation honest until integrations exist.
+(function () {
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning." : hour < 18 ? "Good afternoon." : "Good evening.";
+  const greetingNode = document.getElementById("greeting");
+  if (greetingNode) greetingNode.textContent = greeting;
+  const dateNode = document.getElementById("dateLabel");
+  if (dateNode) dateNode.textContent = new Date().toLocaleDateString([], {weekday:"short", month:"short", day:"numeric", year:"numeric"});
+  document.querySelectorAll("[data-section]").forEach(button => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll("[data-section]").forEach(item => item.classList.remove("active"));
+      button.classList.add("active");
+      const name = button.dataset.section;
+      if (name === "home") return;
+      const labels = {files:"Files & Notes",obsidian:"Obsidian",browser:"Browser",research:"Research",calendar:"Calendar",reminders:"Reminders",apps:"Applications",settings:"Settings"};
+      addMessage((labels[name] || name) + " is not connected in this local prototype yet. This navigation item is a placeholder, not a working integration.", "assistant");
+      document.getElementById("messages")?.scrollIntoView({behavior:"smooth", block:"nearest"});
+    });
+  });
+  document.querySelectorAll("[data-action]").forEach(button => {
+    button.addEventListener("click", () => {
+      const action = button.dataset.action;
+      const prompts = {
+        file: "Open file is not connected yet. Browser-based pages cannot browse your computer's files without a file picker.",
+        web: "Search web is not connected yet. Nebius AI and web-search tools are not configured.",
+        summarize: "To summarize, paste text into the command box. Document access is not connected yet.",
+        reminder: "Use the task box to add a local task. Timed notifications are not implemented yet.",
+        obsidian: "Obsidian integration is not connected yet."
+      };
+      if (action === "reminder") document.getElementById("taskInput")?.focus();
+      addMessage(prompts[action] || "This action is not connected yet.", "assistant");
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+Starting JARVIS backend... 
+INFO:     Started server process [1720]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 10048] error while attempting to bind on address ('127.0.0.1', 8000): [winerror 10048] only one usage of each socket address (protocol/network address/port) is normally permitted
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+Starting JARVIS backend... 
+INFO:     Started server process [9732]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 10048] error while attempting to bind on address ('127.0.0.1', 8000): [winerror 10048] only one usage of each socket address (protocol/network address/port) is normally permitted
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+Starting JARVIS backend... 
+INFO:     Started server process [22044]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 10048] error while attempting to bind on address ('127.0.0.1', 8000): [winerror 10048] only one usage of each socket address (protocol/network address/port) is normally permitted
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+Starting JARVIS backend... 
+INFO:     Started server process [12436]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:59913 - "GET /docs?utm_source=chatgpt.com HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59913 - "GET /openapi.json HTTP/1.1" 200 OK
+Starting JARVIS backend... 
+INFO:     Started server process [19380]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:50586 - "GET /docs?utm_source=chatgpt.com HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50586 - "GET /openapi.json HTTP/1.1" 200 OK
+Starting JARVIS backend... 
+INFO:     Started server process [2652]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:52542 - "GET /docs?utm_source=chatgpt.com HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52542 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52556 - "GET /docs?utm_source=chatgpt.com HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52556 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59698 - "OPTIONS /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59698 - "POST /api/chat HTTP/1.1" 200 OK
+Starting JARVIS backend... 
+INFO:     Started server process [12116]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:56835 - "GET /docs?utm_source=chatgpt.com HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56835 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56835 - "GET /docs?utm_source=chatgpt.com HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56835 - "GET /openapi.json HTTP/1.1" 200 OK
+Starting JARVIS backend... 
+INFO:     Started server process [15212]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+Starting JARVIS backend... 
+INFO:     Started server process [13484]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+Starting JARVIS backend... 
+INFO:     Started server process [4784]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+Starting JARVIS backend... 
+INFO:     Started server process [16760]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started server process [1828]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+^CINFO:     Started server process [12224]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:61943 - "OPTIONS /api/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61943 - "POST /api/chat HTTP/1.1" 200 OK
+^C

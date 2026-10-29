@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS | Personal AI Workspace</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg-0:#030814;--bg-1:#07102a;
+  --surface:rgba(7,20,42,.74);--surface-2:rgba(16,40,78,.62);--card:rgba(20,48,92,.38);
+  --line:rgba(125,195,255,.16);--line-strong:rgba(125,205,255,.4);
+  --cyan:#74e0ff;--blue:#3f8cff;--violet:#8f7bff;
+  --text:#eef6ff;--muted:#a0b8d8;--dim:#7690b4;
+  --mint:#6fe8c3;--amber:#f0b45a;--danger:#ff7a8a;
+  --r-sm:10px;--r-md:16px;
+  --font:Inter,"Space Grotesk","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg-1)}
+body{min-height:100vh;font-family:var(--font);color:var(--text);overflow-x:hidden;background:linear-gradient(180deg,#050b22,#10163f 60%,#2a2160)}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.icon{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+
+/* ---------- scene background ---------- */
+.scene{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.scene svg{width:100%;height:100%;display:block}
+.scene::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(3,8,22,.5),rgba(3,8,22,.12) 45%,rgba(3,8,22,.55)),radial-gradient(ellipse at 50% 38%,transparent 30%,rgba(3,8,22,.5) 100%)}
+.twinkle{animation:twinkle 6s ease-in-out infinite}
+@keyframes twinkle{50%{opacity:.35}}
+
+/* ---------- shell ---------- */
+.shell{position:relative;z-index:1;min-height:100vh;display:grid;grid-template-columns:230px minmax(0,1fr)}
+.sidebar{
+  position:sticky;top:0;height:100vh;padding:22px 14px 16px;display:flex;flex-direction:column;gap:24px;
+  background:linear-gradient(180deg,rgba(4,12,28,.88),rgba(4,12,28,.7));border-right:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+}
+.brand{display:flex;align-items:center;gap:13px;padding:2px 8px 4px}
+.brand-mark{width:44px;height:44px;flex:0 0 44px;filter:drop-shadow(0 0 8px rgba(60,170,255,.7))}
+.brand-name{font-size:17px;letter-spacing:.42em;font-weight:400}
+.brand-sub{font-size:10px;color:var(--muted);letter-spacing:.14em;margin-top:5px}
+.nav{display:grid;gap:4px}
+.nav button{
+  display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:12px 14px;border-radius:var(--r-sm);
+  border:1px solid transparent;background:transparent;color:#c8d9f0;font-size:14px;transition:background .2s,color .2s,border-color .2s;
+}
+.nav button:hover{color:#fff;background:rgba(63,140,255,.1)}
+.nav button.active{color:#fff;background:linear-gradient(100deg,rgba(40,105,190,.55),rgba(40,105,190,.2));border-color:var(--line-strong)}
+.nav button.active .icon{color:#fff}
+.sidebar-bottom{margin-top:auto;padding:10px;font-size:10px;line-height:1.75;color:var(--dim);letter-spacing:.05em}
+.sidebar-bottom b{color:var(--muted);font-weight:500}
+
+.workspace{min-width:0;padding:0 28px 18px;display:flex;flex-direction:column;gap:20px}
+.topbar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;min-height:96px}
+.top-left{display:flex;justify-self:start}
+.top-right{display:flex;align-items:center;gap:12px;justify-self:end}
+.date-block{text-align:center;min-width:0}
+.date-label{font-size:12px;color:#c3d6ee;letter-spacing:.06em}
+.clock{font-size:34px;font-weight:300;letter-spacing:.2em;margin:2px 0;font-variant-numeric:tabular-nums;text-shadow:0 0 18px rgba(116,224,255,.35)}
+.motto{font-size:10px;color:var(--muted);letter-spacing:.22em}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:7px 13px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:11px;color:var(--muted);letter-spacing:.05em;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 8px rgba(111,232,195,.6)}
+.pill.provider .dot{background:var(--amber);box-shadow:0 0 8px rgba(240,180,90,.5)}
+body.is-error .pill.status .dot{background:var(--danger);box-shadow:0 0 8px rgba(255,122,138,.6)}
+.profile{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:rgba(20,48,92,.6);border:1px solid var(--line-strong);color:var(--muted)}
+
+.dashboard{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:20px;align-items:start}
+.main-column{min-width:0}
+
+/* ---------- hero ---------- */
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 8px}
+.core-stage{position:relative;width:min(250px,60vw);aspect-ratio:1;display:grid;place-items:center}
+.orb{position:relative;width:100%;height:100%;transition:filter .5s}
+.orb svg{width:100%;height:100%;overflow:visible;display:block}
+.core-label{position:absolute;left:-30px;right:-30px;bottom:-12px;text-align:center;font-size:10px;letter-spacing:.3em;color:var(--cyan);text-transform:uppercase;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+
+.ring-a{transform-origin:200px 200px;animation:spin 80s linear infinite}
+.ring-b{transform-origin:200px 200px;animation:spin 40s linear infinite reverse}
+.ring-c{transform-origin:200px 200px;animation:spin 24s linear infinite}
+.halo{transform-origin:200px 200px;animation:breathe 5s ease-in-out infinite}
+.core-body{transform-origin:200px 200px;animation:breathe 5s ease-in-out infinite}
+.scan{transform-origin:200px 200px;opacity:0;animation:spin 2.4s linear infinite;transition:opacity .4s}
+.pulse{transform-origin:200px 200px;opacity:0}
+.wave rect{transform-box:fill-box;transform-origin:center;transform:scaleY(.22);transition:transform .3s}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes breathe{50%{transform:scale(1.03)}}
+@keyframes wave{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}
+@keyframes ping{0%{opacity:.7;transform:scale(.55)}100%{opacity:0;transform:scale(1.2)}}
+
+.orb.listening{filter:hue-rotate(-25deg) brightness(1.12)}
+.orb.listening .pulse{animation:ping 1.8s ease-out infinite}
+.orb.listening .wave rect{animation:wave 1s ease-in-out infinite}
+.orb.processing .scan{opacity:1}
+.orb.processing .ring-c{animation-duration:6s}
+.orb.speaking{filter:brightness(1.18)}
+.orb.speaking .pulse{animation:ping 2.4s ease-out infinite}
+.orb.speaking .wave rect{animation:wave 1.4s ease-in-out infinite}
+.orb.error{filter:hue-rotate(150deg) saturate(1.2)}
+.orb.error .halo,.orb.error .core-body{animation:none}
+
+.greeting-block{margin-top:26px;text-shadow:0 2px 18px rgba(0,0,0,.55)}
+.hero h1{font-size:clamp(28px,3.4vw,40px);font-weight:400;margin:0 0 4px;letter-spacing:-.01em}
+.subheading{margin:0;color:#e0ecfb;font-size:16px}
+
+.command-wrap{
+  width:min(100%,700px);margin-top:26px;display:flex;align-items:center;gap:8px;padding:7px;border-radius:999px;
+  border:1px solid var(--line-strong);background:rgba(18,44,86,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 10px 36px rgba(0,0,0,.35),0 0 30px rgba(63,140,255,.16);transition:border-color .25s,box-shadow .25s;
+}
+.command-wrap:focus-within{border-color:var(--cyan);box-shadow:0 10px 36px rgba(0,0,0,.35),0 0 36px rgba(116,224,255,.28)}
+.command-wrap input{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:13px 8px;font-size:14px}
+.command-wrap input::placeholder{color:#9db8dc}
+.round-btn{flex:0 0 42px;width:42px;height:42px;border:0;border-radius:50%;display:grid;place-items:center;background:transparent;color:var(--cyan);transition:background .2s,transform .2s}
+.round-btn:hover{background:rgba(111,200,255,.2)}
+.round-btn:active{transform:scale(.95)}
+.round-btn.send{background:rgba(111,180,255,.18);color:#fff}
+.round-btn[aria-pressed="true"]{background:rgba(111,232,195,.28);color:var(--mint);box-shadow:0 0 0 3px rgba(111,232,195,.15)}
+
+.quick-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:18px}
+.quick-actions button{display:inline-flex;align-items:center;gap:9px;padding:10px 18px;border:1px solid var(--line-strong);border-radius:999px;background:rgba(6,20,44,.6);color:#d6e6fa;font-size:12.5px;transition:.2s;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.quick-actions button:hover{color:#fff;border-color:var(--cyan);background:rgba(63,140,255,.22)}
+.quick-actions .icon{width:16px;height:16px}
+
+/* ---------- panels ---------- */
+.lower-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:34px}
+.panel{min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 14px 34px rgba(0,0,0,.28)}
+.panel-title{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 18px;font-size:14px;font-weight:500;color:var(--text)}
+.panel-title .left{display:flex;align-items:center;gap:11px}
+.panel-title .left .icon{color:#cfe4ff;width:20px;height:20px}
+.panel-title span.meta{font-weight:400;font-size:11px;color:var(--dim);letter-spacing:.04em}
+.panel-content{padding:0 18px 14px}
+.empty-state,.empty{font-size:12.5px;color:var(--dim);padding:14px 0;line-height:1.6}
+.cal-today{font-size:14px;color:var(--text);padding:2px 0 4px;border-top:1px solid var(--line);padding-top:12px}
+
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:4px 18px 18px}
+.qcard{display:flex;align-items:center;gap:12px;text-align:left;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--card);transition:.2s;min-width:0}
+.qcard:hover{border-color:var(--line-strong);background:rgba(50,110,200,.28)}
+.qcard .qi{flex:0 0 36px;height:36px;border-radius:10px;display:grid;place-items:center;background:rgba(116,224,255,.1);color:var(--cyan)}
+.qcard strong{display:block;font-weight:500;font-size:13px}
+.qcard small{display:block;color:var(--dim);font-size:11px;margin-top:3px}
+.qtext{min-width:0}
+
+.messages{padding:4px 16px 16px;min-height:150px;max-height:300px;overflow:auto;scroll-behavior:smooth}
+.message{padding:11px 13px;margin-bottom:10px;border-radius:var(--r-sm);line-height:1.6;font-size:13px;white-space:pre-wrap;overflow-wrap:anywhere;background:rgba(63,140,255,.08);border:1px solid var(--line)}
+.message:last-child{margin-bottom:0}
+.message.assistant{border-left:2px solid var(--cyan)}
+.message.user{border-left:2px solid var(--violet);background:rgba(110,100,230,.12)}
+.message-label{color:var(--cyan);font-size:9px;letter-spacing:.2em;margin-bottom:5px}
+.message.user .message-label{color:#b8aeff}
+
+.task-controls{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--line)}
+.task-controls input{flex:1;min-width:0;background:rgba(3,13,28,.6);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 11px;font-size:13px;outline:0}
+.task-controls input:focus{border-color:var(--cyan)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line-strong);border-radius:var(--r-sm);padding:9px 13px;background:rgba(63,140,255,.16);color:var(--text);font-size:12px;white-space:nowrap;transition:background .2s}
+.btn:hover{background:rgba(63,140,255,.32)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.right-column{display:grid;gap:16px;min-width:0}
+.task-list{padding:0 18px 6px;max-height:280px;overflow:auto;border-top:1px solid var(--line)}
+.task{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(125,195,255,.08);font-size:13.5px}
+.task:last-child{border-bottom:0}
+.task input{width:17px;height:17px;accent-color:var(--blue);flex:0 0 auto}
+.task span{flex:1;min-width:0;overflow-wrap:anywhere}
+.task.done span{text-decoration:line-through;color:var(--dim)}
+.delete-task{background:transparent;border:0;color:var(--dim);font-size:18px;line-height:1;padding:2px 6px;border-radius:6px}
+.delete-task:hover{color:var(--danger);background:rgba(255,122,138,.1)}
+.voice-controls{display:grid;gap:9px;padding:0 18px 18px}
+.voice-controls label{font-size:10px;color:var(--dim);letter-spacing:.14em}
+.voice-controls select{width:100%;padding:10px;background:#0a1b32;border:1px solid var(--line);border-radius:var(--r-sm);outline:0;font-size:12px}
+.voice-controls select:focus{border-color:var(--cyan)}
+.hint{font-size:11px;line-height:1.6;color:var(--dim);margin:0;padding:0 18px 14px}
+.footer{margin-top:auto;text-align:center;color:var(--muted);font-size:10px;letter-spacing:.24em;padding:16px 0 2px;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+
+/* ---------- responsive ---------- */
+@media(max-width:1180px){
+  .shell{grid-template-columns:70px minmax(0,1fr)}
+  .sidebar{padding:18px 8px;align-items:center}
+  .brand{padding:0}.brand-copy,.nav-label,.sidebar-bottom{display:none}
+  .nav button{justify-content:center;padding:13px}
+  .dashboard{grid-template-columns:1fr}
+  .right-column{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+  .workspace{padding:0 20px 16px}
+}
+@media(max-width:760px){
+  .shell{grid-template-columns:1fr}
+  .sidebar{position:sticky;top:0;z-index:5;height:auto;flex-direction:row;align-items:center;padding:8px;gap:6px;border-right:0;border-bottom:1px solid var(--line);background:rgba(4,12,28,.94)}
+  .brand{display:none}
+  .nav{display:flex;overflow-x:auto;gap:4px;width:100%;scrollbar-width:none}
+  .nav::-webkit-scrollbar{display:none}
+  .nav button{flex:0 0 auto;width:auto;padding:9px 12px;gap:7px}
+  .nav-label{display:inline;font-size:11px}
+  .workspace{padding:0 12px 14px;gap:14px}
+  .topbar{grid-template-columns:1fr auto;min-height:80px}
+  .top-left{display:none}
+  .date-block{text-align:left}
+  .clock{font-size:26px}
+  .pill.provider{display:none}
+  .lower-grid{grid-template-columns:1fr;margin-top:26px}
+  .right-column{grid-template-columns:1fr}
+  .command-wrap{margin-top:20px}
+  .round-btn{flex-basis:44px;width:44px;height:44px}
+  .quick-actions button{padding:9px 13px;font-size:12px}
+  .messages{max-height:280px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+</style>
+<link rel="icon" href="data:,">
+</head>
+
+<body>
+<!-- Decorative evening-city backdrop (pure SVG, generated below) -->
+<div class="scene" aria-hidden="true">
+  <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#050b22"/><stop offset=".3" stop-color="#121848"/><stop offset=".5" stop-color="#3a2a74"/>
+        <stop offset=".62" stop-color="#b24f7c"/><stop offset=".7" stop-color="#f09a64"/><stop offset="1" stop-color="#f4b07a"/>
+      </linearGradient>
+      <radialGradient id="moon" cx="40%" cy="38%" r="70%"><stop offset="0" stop-color="#a39cdc"/><stop offset=".7" stop-color="#4a4786"/><stop offset="1" stop-color="#1c1d52"/></radialGradient>
+      <linearGradient id="mt1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3478"/><stop offset="1" stop-color="#1a1b52"/></linearGradient>
+      <linearGradient id="mt2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c1f58"/><stop offset="1" stop-color="#0b1236"/></linearGradient>
+    </defs>
+    <rect width="1600" height="900" fill="url(#sky)"/>
+    <g id="stars" fill="#fff"></g>
+    <circle cx="1370" cy="150" r="92" fill="url(#moon)" opacity=".6"/>
+    <path d="M0 560 L120 505 L240 545 L380 455 L520 525 L660 480 L800 545 L940 505 L1080 560 L1240 520 L1400 565 L1600 525 L1600 900 L0 900Z" fill="url(#mt1)"/>
+    <path d="M0 650 L160 575 L300 635 L460 555 L620 640 L780 600 L940 660 L1100 620 L1280 670 L1600 630 L1600 900 L0 900Z" fill="url(#mt2)"/>
+    <g id="city"></g>
+    <path d="M0 770 C300 735 600 785 900 755 C1200 725 1400 775 1600 748 L1600 900 L0 900Z" fill="#070d28"/>
+    <g id="lights"></g>
+  </svg>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></symbol>
+    <symbol id="i-note" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 17V11a6 6 0 0 1 12 0v6l2 2H4z"/><path d="M10 21a2 2 0 0 0 4 0"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></symbol>
+    <symbol id="i-text" viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 9h8M8 13h8M8 17h4"/></symbol>
+    <symbol id="i-voice" viewBox="0 0 24 24"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L5 14h6l-1 8 8-12h-6z"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></symbol>
+  </defs>
+</svg>
+
+<div class="shell">
+  <aside class="sidebar" aria-label="Main navigation">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="19" fill="none" stroke="#4fc3ff" stroke-width="2.5"/><circle cx="22" cy="22" r="13" fill="none" stroke="#9fe9ff" stroke-width="1" opacity=".7"/></svg>
+      <div class="brand-copy"><div class="brand-name">JARVIS</div><div class="brand-sub">Personal Assistant</div></div>
+    </div>
+    <nav class="nav" aria-label="Sections">
+      <button class="active" type="button" data-section="home" aria-current="page" title="Home"><svg class="icon"><use href="#i-home"/></svg><span class="nav-label">Home</span></button>
+      <button type="button" data-section="files" title="Files &amp; Notes"><svg class="icon"><use href="#i-folder"/></svg><span class="nav-label">Files &amp; Notes</span></button>
+      <button type="button" data-section="browser" title="Browser"><svg class="icon"><use href="#i-globe"/></svg><span class="nav-label">Browser</span></button>
+      <button type="button" data-section="research" title="Research"><svg class="icon"><use href="#i-target"/></svg><span class="nav-label">Research</span></button>
+      <button type="button" data-section="calendar" title="Calendar"><svg class="icon"><use href="#i-cal"/></svg><span class="nav-label">Calendar</span></button>
+      <button type="button" data-section="reminders" title="Reminders"><svg class="icon"><use href="#i-bell"/></svg><span class="nav-label">Reminders</span></button>
+      <button type="button" data-section="apps" title="Apps"><svg class="icon"><use href="#i-grid"/></svg><span class="nav-label">Apps</span></button>
+      <button type="button" data-section="settings" title="Settings"><svg class="icon"><use href="#i-gear"/></svg><span class="nav-label">Settings</span></button>
+    </nav>
+    <div class="sidebar-bottom"><b>LOCAL MODE</b><br>Private by default<br>AI provider not connected</div>
+  </aside>
+
+  <main class="workspace">
+    <header class="topbar">
+      <div class="top-left">
+        <div class="pill status" role="status"><span class="dot" aria-hidden="true"></span><span id="systemStatus">LOCAL SYSTEM READY</span></div>
+      </div>
+      <div class="date-block">
+        <div class="date-label" id="dateLabel">YOUR PERSONAL WORKSPACE</div>
+        <div class="clock" id="clock">--:--</div>
+        <div class="motto">Small steps. Big discoveries.</div>
+      </div>
+      <div class="top-right">
+        <div class="pill provider"><span class="dot" aria-hidden="true"></span>AI provider: not connected</div>
+        <div class="profile" title="Personal assistant"><svg class="icon"><use href="#i-user"/></svg></div>
+      </div>
+    </header>
+
+    <div class="dashboard" id="homeSection">
+      <div class="main-column">
+        <section class="hero" aria-label="JARVIS assistant">
+          <div class="core-stage">
+            <div class="orb" id="orb" role="img" aria-label="JARVIS core indicator">
+              <svg viewBox="0 0 400 400" aria-hidden="true">
+                <defs>
+                  <radialGradient id="gCore" cx="50%" cy="42%" r="62%">
+                    <stop offset="0" stop-color="#8a7cff"/><stop offset=".45" stop-color="#4a3fd0"/>
+                    <stop offset=".85" stop-color="#1c1470"/><stop offset="1" stop-color="#0b0a3a"/>
+                  </radialGradient>
+                  <radialGradient id="gHalo" cx="50%" cy="50%" r="50%">
+                    <stop offset="0" stop-color="#6a7bff" stop-opacity=".5"/><stop offset=".55" stop-color="#4a6bff" stop-opacity=".16"/><stop offset="1" stop-color="#4a6bff" stop-opacity="0"/>
+                  </radialGradient>
+                  <linearGradient id="gScan" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0" stop-color="#74e0ff" stop-opacity="0"/><stop offset="1" stop-color="#74e0ff" stop-opacity=".9"/>
+                  </linearGradient>
+                  <filter id="fGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                </defs>
+                <circle class="halo" cx="200" cy="200" r="196" fill="url(#gHalo)"/>
+                <circle class="pulse" cx="200" cy="200" r="150" fill="none" stroke="#74e0ff" stroke-width="1.5"/>
+                <g class="ring-a"><circle cx="200" cy="200" r="182" fill="none" stroke="#74e0ff" stroke-opacity=".3" stroke-width="1"/><g id="ticks" stroke="#74e0ff" stroke-opacity=".45" stroke-width="1"></g></g>
+                <g class="ring-b"><path d="M200 38 A162 162 0 0 1 362 200" fill="none" stroke="#6fb4ff" stroke-opacity=".8" stroke-width="2.2" stroke-linecap="round"/><path d="M200 362 A162 162 0 0 1 38 200" fill="none" stroke="#9a86ff" stroke-opacity=".7" stroke-width="2.2" stroke-linecap="round"/><circle cx="200" cy="200" r="146" fill="none" stroke="#3f8cff" stroke-opacity=".45" stroke-width="1" stroke-dasharray="3 9"/></g>
+                <g class="ring-c" filter="url(#fGlow)"><path d="M120 200 A80 80 0 0 1 200 120" fill="none" stroke="#bfefff" stroke-opacity=".0"/><circle cx="200" cy="200" r="122" fill="none" stroke="#8be8ff" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="60 110 20 90"/></g>
+                <path class="scan" d="M200 200 L200 60 A140 140 0 0 1 338 164 Z" fill="url(#gScan)" opacity="0"/>
+                <g class="core-body" filter="url(#fGlow)"><circle cx="200" cy="200" r="96" fill="url(#gCore)" stroke="#a5ecff" stroke-width="3"/></g>
+                <circle cx="200" cy="200" r="104" fill="none" stroke="#74e0ff" stroke-opacity=".5" stroke-width="1"/>
+                <g class="wave" id="wave" fill="#7fe8ff" fill-opacity=".95"></g>
+              </svg>
+            </div>
+            <div class="core-label" id="coreLabel" aria-live="polite">AWAITING YOUR COMMAND</div>
+          </div>
+
+          <div class="greeting-block">
+            <h1 id="greeting">Good day.</h1>
+            <p class="subheading">I'm here. What would you like to accomplish?</p>
+          </div>
+
+          <form id="chatForm" class="command-wrap" aria-label="Command bar">
+            <button class="round-btn" type="button" id="micButton" title="Use voice input" aria-label="Use voice input" aria-pressed="false"><svg class="icon"><use href="#i-mic"/></svg></button>
+            <label class="sr-only" for="commandInput">Your command</label>
+            <input id="commandInput" placeholder="Ask JARVIS anything…" autocomplete="off" aria-label="Your command">
+            <button class="round-btn send" type="submit" aria-label="Send message"><svg class="icon"><use href="#i-send"/></svg></button>
+          </form>
+
+          <div class="quick-actions" role="group" aria-label="Quick actions">
+            <button type="button" data-action="file"><svg class="icon"><use href="#i-folder"/></svg>Open file</button>
+            <button type="button" data-action="web"><svg class="icon"><use href="#i-search"/></svg>Search web</button>
+            <button type="button" data-action="summarize"><svg class="icon"><use href="#i-text"/></svg>Summarize</button>
+            <button type="button" data-action="reminder"><svg class="icon"><use href="#i-bell"/></svg>Set reminder</button>
+            <button type="button" data-action="notes"><svg class="icon"><use href="#i-note"/></svg>Open notes</button>
+          </div>
+        </section>
+
+        <div class="lower-grid">
+          <section class="panel">
+            <div class="panel-title"><div class="left"><svg class="icon"><use href="#i-bolt"/></svg>Quick access</div></div>
+            <div class="quick-grid">
+              <button type="button" class="qcard" data-action="notes"><span class="qi"><svg class="icon"><use href="#i-note"/></svg></span><span class="qtext"><strong>Notes</strong><small>Your notes</small></span></button>
+              <button type="button" class="qcard" data-action="web"><span class="qi"><svg class="icon"><use href="#i-globe"/></svg></span><span class="qtext"><strong>Browse web</strong><small>Search &amp; research</small></span></button>
+              <button type="button" class="qcard" data-action="file"><span class="qi"><svg class="icon"><use href="#i-folder"/></svg></span><span class="qtext"><strong>Open files</strong><small>Your documents</small></span></button>
+              <button type="button" class="qcard" data-action="apps"><span class="qi"><svg class="icon"><use href="#i-grid"/></svg></span><span class="qtext"><strong>Run app</strong><small>Your applications</small></span></button>
+            </div>
+          </section>
+
+          <section class="panel" id="conversation" aria-label="Recent activity">
+            <div class="panel-title"><div class="left"><svg class="icon"><use href="#i-clock"/></svg>Recent activity</div><span class="meta">This session</span></div>
+            <div class="messages" id="messages" aria-live="polite">
+              <div class="message assistant"><div class="message-label">JARVIS · LOCAL MODE</div>Hello! I'm your local JARVIS prototype. I can manage a basic task list and tell you the time. Nebius AI is not connected yet.</div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <aside class="right-column" aria-label="Supporting panels">
+        <section class="panel tasks-panel">
+          <div class="panel-title"><div class="left"><svg class="icon"><use href="#i-list"/></svg>Today's tasks</div><span class="meta" id="taskCount">0 open</span></div>
+          <div class="task-list" id="taskList"></div>
+          <form class="task-controls" id="taskForm">
+            <label class="sr-only" for="taskInput">New task</label>
+            <input id="taskInput" placeholder="Add a task…" aria-label="New task" autocomplete="off">
+            <button class="btn" type="submit">+ Add</button>
+          </form>
+          <p class="hint">Try: “help”, “add task prepare demo”, “show tasks”.</p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title"><div class="left"><svg class="icon"><use href="#i-cal"/></svg>Calendar</div><span class="meta">Not connected</span></div>
+          <div class="panel-content">
+            <div class="cal-today" id="calendarToday">Today</div>
+            <div class="empty-state">No calendar integration is connected yet.</div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title"><div class="left"><svg class="icon"><use href="#i-file"/></svg>Recent files</div><span class="meta">Not available</span></div>
+          <div class="panel-content"><div class="empty-state">File history is not available in this prototype yet.</div></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title"><div class="left"><svg class="icon"><use href="#i-voice"/></svg>Voice</div><span class="meta">Browser speech</span></div>
+          <div class="voice-controls">
+            <label for="voiceSelect">JARVIS VOICE</label>
+            <select id="voiceSelect"><option value="">Loading available voices...</option></select>
+            <button type="button" class="btn" id="testVoiceButton">Test voice</button>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <div class="footer">JARVIS — Always with you</div>
+  </main>
+</div>
+
+<script>
+    const $ = (id) => document.getElementById(id);
+    const STORAGE_KEY = "jarvis-prototype-tasks-v1";
+    let tasks = loadTasks();
+
+    /* ---- decorative construction: backdrop scene + orb details (no app state) ---- */
+    (function buildDecor() {
+      const ns = "http://www.w3.org/2000/svg";
+      const mk = (name, attrs, parent) => {
+        const el = document.createElementNS(ns, name);
+        for (const k in attrs) el.setAttribute(k, attrs[k]);
+        parent.appendChild(el);
+        return el;
+      };
+      let seed = 7;
+      const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+      // Stars
+      const stars = $("stars");
+      for (let i = 0; i < 90; i++) {
+        const c = mk("circle", { cx: rnd() * 1600, cy: rnd() * 380, r: rnd() * 1.1 + 0.3, opacity: (rnd() * 0.6 + 0.2).toFixed(2) }, stars);
+        if (i % 4 === 0) { c.setAttribute("class", "twinkle"); c.style.animationDelay = (rnd() * 6).toFixed(1) + "s"; }
+      }
+
+      // City skyline on the right
+      const city = $("city");
+      let x = 1040;
+      while (x < 1580) {
+        const w = 16 + rnd() * 32;
+        const tall = x > 1240 && x < 1420;
+        const h = 50 + rnd() * (tall ? 300 : 130);
+        const y = 700 - h;
+        mk("rect", { x, y, width: w, height: h + 60, fill: "#0b1334" }, city);
+        if (tall && rnd() > 0.55) mk("rect", { x: x + w / 2 - 1.5, y: y - 40, width: 3, height: 40, fill: "#0b1334" }, city);
+        const n = Math.floor(h / 22);
+        for (let j = 0; j < n; j++) {
+          if (rnd() > 0.45) mk("rect", { x: x + 4 + rnd() * (w - 10), y: y + 8 + j * 20, width: 2.2, height: 3, fill: rnd() > 0.3 ? "#ffc77a" : "#8fe4ff", opacity: (rnd() * 0.6 + 0.3).toFixed(2) }, city);
+        }
+        x += w + 4 + rnd() * 8;
+      }
+
+      // Valley lights
+      const lights = $("lights");
+      for (let i = 0; i < 170; i++) {
+        mk("circle", { cx: rnd() * 1600, cy: 735 + rnd() * 130, r: (rnd() * 1.3 + 0.5).toFixed(2), fill: rnd() > 0.6 ? "#8fe4ff" : "#ffc77a", opacity: (rnd() * 0.6 + 0.25).toFixed(2) }, lights);
+      }
+
+      // Orb tick marks
+      const ticks = $("ticks");
+      for (let i = 0; i < 72; i++) {
+        const a = (i / 72) * Math.PI * 2;
+        const r1 = i % 6 === 0 ? 174 : 178, r2 = 187;
+        mk("line", { x1: 200 + Math.cos(a) * r1, y1: 200 + Math.sin(a) * r1, x2: 200 + Math.cos(a) * r2, y2: 200 + Math.sin(a) * r2 }, ticks);
+      }
+
+      // Orb waveform (bell-shaped bar heights)
+      const wave = $("wave");
+      const count = 25;
+      for (let i = 0; i < count; i++) {
+        const t = (i - (count - 1) / 2) / ((count - 1) / 2);
+        const h = 10 + Math.round((1 - t * t) * 62 * (0.55 + ((i * 7) % 5) / 10));
+        const r = mk("rect", { x: 200 - (count * 5.6) / 2 + i * 5.6, y: 200 - h / 2, width: 3, height: h, rx: 1.5 }, wave);
+        r.style.animationDelay = (i * 0.07).toFixed(2) + "s";
+      }
+    })();
+
+    /* ---- orb state helper: reflects real app state only ---- */
+    function setOrbState(state, label, status) {
+      const orb = $("orb");
+      ["listening", "processing", "speaking", "error"].forEach(s => orb.classList.remove(s));
+      if (state) orb.classList.add(state);
+      document.body.classList.toggle("is-error", state === "error");
+      $("coreLabel").textContent = label || "AWAITING YOUR COMMAND";
+      $("systemStatus").textContent = status || "LOCAL SYSTEM READY";
+    }
+
+    function loadTasks() {
+      try {
+        const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        return Array.isArray(data) ? data : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveTasks() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      } catch {
+        addMessage("I couldn't save tasks in this browser. Check your browser storage settings.", "assistant");
+      }
+      renderTasks();
+    }
+
+    function renderTasks() {
+      const list = $("taskList");
+      list.replaceChildren();
+      const openCount = tasks.filter(task => !task.done).length;
+      $("taskCount").textContent = openCount + " open";
+
+      if (tasks.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "No tasks yet. Add one below or tell JARVIS to add a task.";
+        list.appendChild(empty);
+        return;
+      }
+
+      tasks.forEach(task => {
+        const row = document.createElement("div");
+        row.className = "task" + (task.done ? " done" : "");
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = task.done;
+        checkbox.setAttribute("aria-label", "Mark task complete: " + task.text);
+        checkbox.addEventListener("change", () => {
+          task.done = checkbox.checked;
+          saveTasks();
+        });
+
+        const label = document.createElement("span");
+        label.textContent = task.text;
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "delete-task";
+        remove.textContent = "×";
+        remove.title = "Delete task";
+        remove.setAttribute("aria-label", "Delete " + task.text);
+        remove.addEventListener("click", () => {
+          tasks = tasks.filter(item => item.id !== task.id);
+          saveTasks();
+        });
+
+        row.append(checkbox, label, remove);
+        list.appendChild(row);
+      });
+    }
+
+    function addTask(text) {
+      const clean = text.trim();
+      if (!clean) return false;
+      tasks.unshift({ id: Date.now() + Math.random(), text: clean, done: false });
+      saveTasks();
+      return true;
+    }
+
+    function addMessage(text, role) {
+      const box = document.createElement("div");
+      box.className = "message " + role;
+
+      const label = document.createElement("div");
+      label.className = "message-label";
+      label.textContent = role === "user" ? "YOU" : "JARVIS · NEMOTRON";
+
+      const content = document.createElement("div");
+      content.textContent = text;
+
+      box.append(label, content);
+      $("messages").appendChild(box);
+      $("messages").scrollTop = $("messages").scrollHeight;
+
+      if (role === "assistant") {
+        speakText(text);
+      }
+    }
+
+    // Text-to-speech voice controls. Keep these declarations outside speakText().
+    const voiceSelect = $("voiceSelect");
+    const testVoiceButton = $("testVoiceButton");
+    let availableVoices = [];
+
+    function loadVoices() {
+      if (!("speechSynthesis" in window) || !voiceSelect || !testVoiceButton) {
+        if (voiceSelect) voiceSelect.innerHTML = "<option value=''>Speech not supported</option>";
+        if (testVoiceButton) testVoiceButton.disabled = true;
+        return;
+      }
+
+      availableVoices = window.speechSynthesis.getVoices();
+      let previousVoice = null;
+      try { previousVoice = localStorage.getItem("jarvis-selected-voice"); } catch {}
+      voiceSelect.replaceChildren();
+
+      const sortedVoices = [...availableVoices].sort((a, b) => {
+        const aUS = a.lang.toLowerCase() === "en-us" ? 0 : 1;
+        const bUS = b.lang.toLowerCase() === "en-us" ? 0 : 1;
+        return aUS - bUS || a.name.localeCompare(b.name);
+      });
+
+      sortedVoices.forEach((voice) => {
+        const option = document.createElement("option");
+        option.value = voice.name;
+        option.textContent = `${voice.name} (${voice.lang})`;
+        voiceSelect.appendChild(option);
+      });
+
+      if (sortedVoices.some((voice) => voice.name === previousVoice)) {
+        voiceSelect.value = previousVoice;
+      } else {
+        const preferred = sortedVoices.find((voice) =>
+          voice.lang.toLowerCase() === "en-us" &&
+          /\b(david|guy|christopher|eric|roger|mark|alex)\b/i.test(voice.name)
+        );
+        const american = sortedVoices.find(
+          (voice) => voice.lang.toLowerCase() === "en-us"
+        );
+        if (preferred || american) {
+          voiceSelect.value = (preferred || american).name;
+        }
+      }
+
+      if (sortedVoices.length === 0) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "Waiting for browser voices…";
+        voiceSelect.appendChild(option);
+      }
+    }
+
+    function speakText(text) {
+      if (
+        !("speechSynthesis" in window) ||
+        !("SpeechSynthesisUtterance" in window)
+      ) {
+        console.warn("Text-to-speech is not supported in this browser.");
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(String(text));
+      const selectedVoice = availableVoices.find(
+        (voice) => voice.name === voiceSelect.value
+      );
+
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        utterance.lang = selectedVoice.lang;
+      } else {
+        utterance.lang = "en-US";
+      }
+
+      // Slower pace and lower pitch for a calmer, cinematic delivery.
+      utterance.rate = 0.88;
+      utterance.pitch = 0.72;
+      utterance.volume = 1;
+
+      utterance.onstart = () => {
+        setOrbState("speaking", "JARVIS IS SPEAKING", "VOICE RESPONSE ACTIVE");
+      };
+
+      const finishSpeaking = () => {
+        setOrbState(null);
+      };
+
+      utterance.onend = finishSpeaking;
+      utterance.onerror = (event) => {
+        finishSpeaking();
+        console.warn("Speech error:", event.error);
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    loadVoices();
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
+    }
+
+    voiceSelect.addEventListener("change", () => {
+      try { localStorage.setItem("jarvis-selected-voice", voiceSelect.value); } catch {}
+    });
+
+    testVoiceButton.addEventListener("click", () => {
+      if (!availableVoices.length) loadVoices();
+      speakText("Good day. All systems are standing by. How may I assist you?");
+    });
+
+    
+function localReply(raw) {
+  const command = raw.trim();
+  const lower = command.toLowerCase();
+
+  // Keep task management local to the existing dashboard.
+  if (lower.startsWith("add task ")) {
+    const taskText = command.slice(9).trim();
+
+    if (!taskText) {
+      return "Please tell me what task you'd like to add.";
+    }
+
+    addTask(taskText);
+    return `Task added: "${taskText}"`;
+  }
+
+  if (
+    lower === "show tasks" ||
+    lower === "list tasks" ||
+    lower === "my tasks"
+  ) {
+    if (!tasks.length) {
+      return "You don't have any tasks yet.";
+    }
+
+    return tasks.map((task, index) =>
+      `${index + 1}. [${task.done ? "x" : " "}] ${task.text}`
+    ).join("\n");
+  }
+
+  if (lower === "clear completed tasks") {
+    const previousCount = tasks.length;
+    tasks = tasks.filter(task => !task.done);
+    saveTasks();
+
+    return previousCount === tasks.length
+      ? "There are no completed tasks to clear."
+      : "Completed tasks cleared.";
+  }
+
+  if (
+    lower.includes("what time") ||
+    lower === "time" ||
+    lower.includes("current time")
+  ) {
+    return "The local time is " +
+      new Date().toLocaleTimeString() + ".";
+  }
+
+  // All other messages should be answered by Nemotron.
+  return null;
+}
+
+async function askNemotron(message) {
+  const response = await fetch("http://127.0.0.1:8000/api/chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ message })
+  });
+
+  let data;
+
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error("The JARVIS backend returned an invalid response.");
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      data.detail || `Backend request failed (${response.status}).`
+    );
+  }
+
+  if (!data.reply) {
+    throw new Error("Nemotron returned an empty reply.");
+  }
+
+  return data.reply;
+}
+
+$("chatForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const input = $("commandInput");
+  const message = input.value.trim();
+
+  if (!message) return;
+
+  addMessage(message, "user");
+  input.value = "";
+
+  const sendButton = $("chatForm").querySelector(
+    'button[type="submit"]'
+  );
+
+  sendButton.disabled = true;
+  setOrbState(
+    "processing",
+    "CONTACTING NEMOTRON",
+    "AI REQUEST IN PROGRESS"
+  );
+
+  try {
+    // Handle supported local commands without using the AI API.
+    let reply = localReply(message);
+
+    // Send all other messages to NVIDIA Nemotron.
+    if (reply === null) {
+      reply = await askNemotron(message);
+    }
+
+    addMessage(reply, "assistant");
+
+    if (
+      !("speechSynthesis" in window) ||
+      !window.speechSynthesis.speaking
+    ) {
+      setOrbState(
+        null,
+        "AWAITING YOUR COMMAND",
+        "NEMOTRON CONNECTED"
+      );
+    }
+  } catch (error) {
+    console.error("JARVIS chat error:", error);
+
+    addMessage(
+      "I couldn't reach Nemotron. Please check that the JARVIS backend is running, then try again. Details: " +
+      error.message,
+      "assistant"
+    );
+
+    setOrbState(
+      "error",
+      "AI CONNECTION ERROR",
+      "REQUEST FAILED"
+    );
+
+    window.setTimeout(() => {
+      if ($("orb").classList.contains("error")) {
+        setOrbState(
+          null,
+          "AWAITING YOUR COMMAND",
+          "CHECK BACKEND CONNECTION"
+        );
+      }
+    }, 5000);
+  } finally {
+    sendButton.disabled = false;
+  }
+});
+
+
+    $("taskForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const input = $("taskInput");
+      if (addTask(input.value)) {
+        addMessage('Task added: "' + input.value.trim() + '"', "assistant");
+        input.value = "";
+      }
+    });
+
+    function updateClock() {
+      $("clock").textContent = new Date().toLocaleTimeString([], {
+        hour: "2-digit", minute: "2-digit"
+      });
+    }
+    updateClock();
+    window.setInterval(updateClock, 1000);
+    renderTasks();
+
+    // Voice recognition support depends on the browser and microphone permission.
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.addEventListener("start", () => {
+        setOrbState("listening", "LISTENING", "MICROPHONE ACTIVE");
+        $("micButton").setAttribute("aria-pressed", "true");
+        $("micButton").title = "Listening…";
+      });
+
+      recognition.addEventListener("result", (event) => {
+        $("commandInput").value = event.results[0][0].transcript;
+        $("chatForm").requestSubmit();
+      });
+
+      recognition.addEventListener("end", () => {
+        $("micButton").setAttribute("aria-pressed", "false");
+        $("micButton").title = "Use voice input";
+        // Keep an error state visible if recognition ended because of an error.
+        if (!$("orb").classList.contains("error") && !$("orb").classList.contains("processing")) {
+          setOrbState(null);
+        }
+      });
+
+      recognition.addEventListener("error", (event) => {
+        setOrbState("error", "VOICE INPUT UNAVAILABLE", "MICROPHONE ERROR");
+        window.setTimeout(() => {
+          if ($("orb").classList.contains("error")) setOrbState(null);
+        }, 4000);
+        addMessage("Voice input error: " + event.error + ". Check microphone permission and try again.", "assistant");
+      });
+    }
+
+    $("micButton").addEventListener("click", () => {
+      if (!recognition) {
+        setOrbState("error", "VOICE INPUT UNSUPPORTED", "MICROPHONE UNAVAILABLE");
+        window.setTimeout(() => {
+          if ($("orb").classList.contains("error")) setOrbState(null);
+        }, 4000);
+        addMessage("Voice recognition isn't supported in this browser. Try a current version of Chrome or Edge, or type your command.", "assistant");
+        return;
+      }
+      try {
+        recognition.start();
+      } catch {
+        addMessage("Voice input is already starting. Please try again in a moment.", "assistant");
+      }
+    });
+
+// Personalize the greeting and keep navigation honest until integrations exist.
+
+(function () {
+  const hour = new Date().getHours();
+  const greeting = hour < 12
+    ? "Good morning."
+    : hour < 18
+      ? "Good afternoon."
+      : "Good evening.";
+
+  const greetingNode = document.getElementById("greeting");
+  if (greetingNode) greetingNode.textContent = greeting;
+
+  const dateNode = document.getElementById("dateLabel");
+  if (dateNode) {
+    dateNode.textContent = new Date().toLocaleDateString([], {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      year: "numeric"
+    });
+  }
+
+  const calNode = document.getElementById("calendarToday");
+  if (calNode) {
+    calNode.textContent = "Today, " +
+      new Date().toLocaleDateString([], {
+        weekday: "short",
+        day: "numeric",
+        month: "short"
+      });
+  }
+
+  async function toolRequest(path, options = {}) {
+    const response = await fetch(
+      "http://127.0.0.1:8000/api/tools" + path,
+      options
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.detail || "The tool request failed.");
+    }
+
+    return data;
+  }
+
+  async function runAction(action) {
+    try {
+      if (action === "file") {
+        const data = await toolRequest("/files");
+        const files = data.files || [];
+
+        if (!files.length) {
+          addMessage(
+            "Your JARVIS workspace is empty. Add a file to the JARVIS_Workspace folder first.",
+            "assistant"
+          );
+          return;
+        }
+
+        const listing = files
+          .map((file, index) =>
+            `${index + 1}. ${file.path}`
+          )
+          .join("\n");
+
+        const selection = window.prompt(
+          "Files in your JARVIS workspace:\n\n" +
+          listing +
+          "\n\nEnter the file number to open:"
+        );
+
+        if (selection === null) return;
+
+        const index = Number(selection) - 1;
+
+        if (
+          !Number.isInteger(index) ||
+          index < 0 ||
+          index >= files.length
+        ) {
+          throw new Error("Please enter a valid file number.");
+        }
+
+        const result = await toolRequest("/open-file", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ path: files[index].path })
+        });
+
+        addMessage(result.message, "assistant");
+        return;
+      }
+
+      if (action === "notes") {
+        const choice = window.prompt(
+          "JARVIS Notes\n\n" +
+          "Type SAVE to create a note, LIST to list notes, " +
+          "or READ to open a saved note."
+        );
+
+        if (choice === null) return;
+
+        if (choice.trim().toLowerCase() === "save") {
+          const title = window.prompt("Enter a title for your note:");
+          if (!title || !title.trim()) return;
+
+          const content = window.prompt("Enter your note:");
+          if (content === null || !content.trim()) return;
+
+          const result = await toolRequest("/notes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: title.trim(),
+              content: content.trim()
+            })
+          });
+
+          addMessage(
+            `Note saved successfully: ${result.title}`,
+            "assistant"
+          );
+          return;
+        }
+
+        if (choice.trim().toLowerCase() === "list") {
+          const data = await toolRequest("/notes");
+
+          addMessage(
+            data.notes.length
+              ? "Saved notes:\n" + data.notes.join("\n")
+              : "You have no saved notes yet.",
+            "assistant"
+          );
+          return;
+        }
+
+        if (choice.trim().toLowerCase() === "read") {
+          const data = await toolRequest("/notes");
+          if (!data.notes.length) {
+            addMessage("There are no saved notes to read.", "assistant");
+            return;
+          }
+
+          const title = window.prompt(
+            "Enter the exact note filename:\n\n" +
+            data.notes.join("\n")
+          );
+
+          if (!title) return;
+
+          const note = await toolRequest(
+            "/notes/" + encodeURIComponent(title.trim())
+          );
+
+          addMessage(
+            `Note: ${note.title}\n\n${note.content}`,
+            "assistant"
+          );
+          return;
+        }
+
+        addMessage("Choose SAVE, LIST, or READ to manage notes.", "assistant");
+        return;
+      }
+
+      if (action === "web") {
+        const query = window.prompt("What would you like to search for?");
+        if (!query || !query.trim()) return;
+
+        const result = await toolRequest(
+          "/search?q=" + encodeURIComponent(query.trim())
+        );
+
+        addMessage(
+          result.message + "\n" + result.url,
+          "assistant"
+        );
+        return;
+      }
+
+      if (action === "summarize") {
+        const text = window.prompt("Paste the text you want summarized:");
+        if (!text || !text.trim()) return;
+
+        setOrbState(
+          "processing",
+          "SUMMARIZING",
+          "CONTACTING NEMOTRON"
+        );
+
+        const summary = await askNemotron(
+          "Summarize the following text clearly. Use key points where helpful:\n\n" +
+          text.trim()
+        );
+
+        addMessage(summary, "assistant");
+        return;
+      }
+
+      if (action === "reminder") {
+        document.getElementById("taskInput")?.focus();
+        addMessage(
+          "Enter your reminder in the task box. Tasks are saved in this browser; timed notifications are not implemented yet.",
+          "assistant"
+        );
+        return;
+      }
+
+      if (action === "apps") {
+        addMessage(
+          "Launching Windows applications is not connected yet.",
+          "assistant"
+        );
+      }
+    } catch (error) {
+      console.error("JARVIS tool error:", error);
+      addMessage("Tool error: " + error.message, "assistant");
+    }
+  }
+
+  document.querySelectorAll("[data-section]").forEach(button => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll("[data-section]").forEach(item => {
+        item.classList.remove("active");
+        item.removeAttribute("aria-current");
+      });
+
+      button.classList.add("active");
+      button.setAttribute("aria-current", "page");
+
+      const section = button.dataset.section;
+
+      if (section === "home") return;
+
+      if (section === "files") {
+        runAction("file");
+      } else if (section === "browser" || section === "research") {
+        runAction("web");
+      } else if (section === "reminders") {
+        runAction("reminder");
+      } else if (section === "apps") {
+        runAction("apps");
+      } else if (section === "calendar") {
+        addMessage(
+          "Calendar integration is not connected yet.",
+          "assistant"
+        );
+      } else if (section === "settings") {
+        document.getElementById("voiceSelect")?.focus();
+        addMessage(
+          "You can change your assistant voice in the Voice Settings panel.",
+          "assistant"
+        );
+      }
+
+      document.getElementById("conversation")
+        ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  });
+
+  document.querySelectorAll("[data-action]").forEach(button => {
+    button.addEventListener("click", () => {
+      runAction(button.dataset.action);
+    });
+  });
+})();
+
+</script>
+</body>
+</html>

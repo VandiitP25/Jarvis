@@ -1,0 +1,588 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JARVIS | Personal AI</title>
+  <style>
+    :root {
+      --bg: #050b14;
+      --panel: rgba(10, 25, 42, .82);
+      --cyan: #45eaff;
+      --blue: #438cff;
+      --muted: #87a9bd;
+      --line: rgba(69, 234, 255, .22);
+      --green: #6dffbd;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: #e6faff;
+      background:
+        radial-gradient(ellipse at 50% 38%, #102b43 0%, transparent 45%),
+        linear-gradient(135deg, #03070d, #081522 60%, #050b14);
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .16;
+      background-image:
+        linear-gradient(rgba(69,234,255,.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(69,234,255,.12) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, black, transparent 90%);
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .app { position: relative; max-width: 1500px; margin: auto; padding: 22px; }
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 16px; padding: 6px 0 20px; border-bottom: 1px solid var(--line);
+    }
+    .brand { letter-spacing: 5px; font-size: 24px; font-weight: 800; }
+    .brand span { color: var(--cyan); }
+    .subtitle { margin-top: 5px; color: var(--muted); font-size: 11px; letter-spacing: 2px; }
+    .status {
+      display: flex; align-items: center; gap: 8px; color: var(--green);
+      font-size: 12px; letter-spacing: 1px;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px var(--green); }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr); gap: 20px; margin-top: 20px; }
+    .panel {
+      background: var(--panel); border: 1px solid var(--line);
+      border-radius: 16px; box-shadow: 0 0 30px rgba(0,0,0,.2);
+      backdrop-filter: blur(10px);
+    }
+    .panel-title {
+      padding: 17px 18px; border-bottom: 1px solid var(--line);
+      color: var(--cyan); font-size: 12px; letter-spacing: 2px;
+    }
+
+    .core-panel { min-height: 475px; display: flex; flex-direction: column; }
+    .core-stage {
+      flex: 1; min-height: 300px; display: grid; place-items: center;
+      position: relative; overflow: hidden;
+    }
+    .orb {
+      width: 190px; height: 190px; border-radius: 50%;
+      position: relative; display: grid; place-items: center;
+      border: 1px solid rgba(69,234,255,.9);
+      background: radial-gradient(circle, rgba(69,234,255,.28), rgba(34,104,180,.08) 48%, transparent 70%);
+      box-shadow: 0 0 28px rgba(69,234,255,.3), inset 0 0 30px rgba(69,234,255,.18);
+      animation: breathe 3s ease-in-out infinite;
+    }
+    .orb::before, .orb::after {
+      content: ""; position: absolute; border: 1px solid var(--cyan); border-radius: 50%;
+    }
+    .orb::before { inset: -18px; border-left-color: transparent; border-right-color: transparent; animation: spin 8s linear infinite; }
+    .orb::after { inset: -35px; border-top-color: transparent; border-bottom-color: transparent; animation: spin 12s linear infinite reverse; }
+    .orb-core {
+      width: 82px; height: 82px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, white, var(--cyan) 18%, #0873b6 60%, #04152b);
+      box-shadow: 0 0 36px var(--cyan), 0 0 70px rgba(69,234,255,.45);
+    }
+    .orb.listening { filter: hue-rotate(65deg); }
+    .orb.speaking { filter: brightness(1.5); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes breathe { 50% { transform: scale(1.045); box-shadow: 0 0 45px rgba(69,234,255,.5); } }
+    .core-label { position: absolute; bottom: 25px; color: var(--muted); font-size: 11px; letter-spacing: 3px; text-align: center; }
+    .metrics { display: grid; grid-template-columns: repeat(3,1fr); border-top: 1px solid var(--line); }
+    .metric { padding: 15px 8px; text-align: center; border-right: 1px solid var(--line); }
+    .metric:last-child { border-right: 0; }
+    .metric strong { display: block; color: var(--cyan); font-size: 18px; }
+    .metric span { color: var(--muted); font-size: 10px; letter-spacing: 1px; }
+
+    .right-column { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+    .chat-panel { display: flex; flex-direction: column; min-height: 475px; }
+    .messages { padding: 16px; flex: 1; min-height: 260px; max-height: 370px; overflow-y: auto; }
+    .message { margin-bottom: 14px; padding: 12px 13px; border-radius: 10px; line-height: 1.5; font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .assistant { background: rgba(69,234,255,.07); border-left: 2px solid var(--cyan); }
+    .user { background: rgba(67,140,255,.13); border-left: 2px solid var(--blue); }
+    .message-label { color: var(--cyan); font-size: 10px; letter-spacing: 1px; margin-bottom: 5px; }
+    .chat-form { padding: 14px; border-top: 1px solid var(--line); }
+    .input-row { display: flex; gap: 8px; }
+    input {
+      min-width: 0; width: 100%; color: white; background: #06111e;
+      border: 1px solid var(--line); border-radius: 9px; padding: 12px;
+      outline: none;
+    }
+    input:focus { border-color: var(--cyan); }
+    .btn {
+      color: var(--cyan); background: rgba(69,234,255,.08);
+      border: 1px solid var(--line); border-radius: 9px; padding: 10px 13px;
+      transition: .2s;
+    }
+    .btn:hover { background: rgba(69,234,255,.18); border-color: var(--cyan); }
+    .btn.primary { background: rgba(69,234,255,.16); white-space: nowrap; }
+    .hint { margin: 10px 2px 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+
+    .tasks-panel { padding-bottom: 14px; }
+    .task-controls { display: flex; gap: 8px; padding: 14px 14px 8px; }
+    .task-list { padding: 0 14px; }
+    .task {
+      display: flex; align-items: center; gap: 9px; padding: 10px 0;
+      border-bottom: 1px solid rgba(69,234,255,.1); font-size: 13px;
+    }
+    .task input { width: auto; accent-color: var(--cyan); }
+    .task.done span { color: #75919f; text-decoration: line-through; }
+    .task span { flex: 1; overflow-wrap: anywhere; }
+    .delete-task { border: 0; background: transparent; color: #83a2b3; font-size: 17px; }
+    .empty { padding: 10px 0; color: var(--muted); font-size: 12px; }
+    .footer { padding: 18px 4px 0; color: #648194; text-align: center; font-size: 10px; letter-spacing: 1px; }
+    .small-btn { padding: 7px 9px; font-size: 11px; }
+
+    @media (max-width: 850px) {
+      .layout { grid-template-columns: 1fr; }
+      .core-panel { min-height: 400px; }
+      header { align-items: flex-start; }
+      .status { font-size: 10px; }
+    }
+    @media (max-width: 480px) {
+      .app { padding: 13px; }
+      .brand { font-size: 20px; }
+      .input-row { flex-wrap: wrap; }
+      .input-row input { flex-basis: 100%; }
+      .orb { width: 150px; height: 150px; }
+      .orb-core { width: 65px; height: 65px; }
+    }
+    .voice-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  border-top: 1px solid var(--line);
+}
+
+.voice-controls label {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+}
+
+.voice-controls select {
+  flex: 1;
+  min-width: 160px;
+  padding: 10px;
+  color: #e6faff;
+  background: #06111e;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.voice-controls option {
+  color: #e6faff;
+  background: #06111e;
+}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div>
+        <div class="brand">JAR<span>V</span>IS</div>
+        <div class="subtitle">PERSONAL AI COMPANION · PROTOTYPE</div>
+      </div>
+      <div class="status"><span class="dot"></span><span id="systemStatus">LOCAL SYSTEM READY</span></div>
+    </header>
+
+    <div class="layout">
+      <section class="panel core-panel">
+        <div class="panel-title">01 / NEURAL INTERFACE</div>
+        <div class="core-stage">
+          <div class="orb" id="orb" aria-label="Animated Jarvis core">
+            <div class="orb-core"></div>
+          </div>
+          <div class="core-label" id="coreLabel">AWAITING YOUR COMMAND</div>
+        </div>
+        <div class="voice-controls">
+          <label for="voiceSelect">JARVIS VOICE</label>
+          <select id="voiceSelect">
+            <option value="">Loading available voices...</option>
+          </select>
+          <button type="button" class="btn" id="testVoiceButton">▶ TEST VOICE</button>
+        </div>
+        <div class="metrics">
+          <div class="metric"><strong id="clock">--:--</strong><span>LOCAL TIME</span></div>
+          <div class="metric"><strong id="taskCount">0</strong><span>OPEN TASKS</span></div>
+          <div class="metric"><strong id="aiState">OFFLINE</strong><span>AI CONNECTION</span></div>
+        </div>
+      </section>
+
+      <div class="right-column">
+        <section class="panel chat-panel">
+          <div class="panel-title">02 / COMMAND CHANNEL</div>
+          <div class="messages" id="messages" aria-live="polite">
+            <div class="message assistant">
+              <div class="message-label">JARVIS · LOCAL MODE</div>
+              Hello! I'm your local Jarvis prototype. I can manage a basic task list and tell you the time. Nebius AI is not connected yet.
+            </div>
+          </div>
+          <form class="chat-form" id="chatForm">
+            <div class="input-row">
+              <input id="commandInput" placeholder="Type a command..." autocomplete="off" aria-label="Your command">
+              <button class="btn" type="button" id="micButton" title="Use voice input" aria-label="Use voice input">🎙</button>
+              <button class="btn primary" type="submit">SEND ↗</button>
+            </div>
+            <p class="hint">Try: “help”, “add task prepare demo”, “show tasks”, or “what time is it?”</p>
+          </form>
+        </section>
+
+        <section class="panel tasks-panel">
+          <div class="panel-title">03 / PERSONAL TASKS</div>
+          <form id="taskForm" class="task-controls">
+            <input id="taskInput" placeholder="Add a task..." aria-label="New task">
+            <button class="btn primary" type="submit">+ ADD</button>
+          </form>
+          <div class="task-list" id="taskList"></div>
+        </section>
+      </div>
+    </div>
+    <div class="footer">LOCAL PROTOTYPE · TASKS SAVED IN THIS BROWSER · AI CORE NOT YET CONNECTED</div>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const STORAGE_KEY = "jarvis-prototype-tasks-v1";
+    let tasks = loadTasks();
+
+    function loadTasks() {
+      try {
+        const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        return Array.isArray(data) ? data : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveTasks() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      } catch {
+        addMessage("I couldn't save tasks in this browser. Check your browser storage settings.", "assistant");
+      }
+      renderTasks();
+    }
+
+    function renderTasks() {
+      const list = $("taskList");
+      list.replaceChildren();
+      const openCount = tasks.filter(task => !task.done).length;
+      $("taskCount").textContent = openCount;
+
+      if (tasks.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "No tasks yet. Add one above or tell Jarvis to add a task.";
+        list.appendChild(empty);
+        return;
+      }
+
+      tasks.forEach(task => {
+        const row = document.createElement("div");
+        row.className = "task" + (task.done ? " done" : "");
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = task.done;
+        checkbox.setAttribute("aria-label", "Mark task complete");
+        checkbox.addEventListener("change", () => {
+          task.done = checkbox.checked;
+          saveTasks();
+        });
+
+        const label = document.createElement("span");
+        label.textContent = task.text;
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "delete-task";
+        remove.textContent = "×";
+        remove.title = "Delete task";
+        remove.setAttribute("aria-label", "Delete " + task.text);
+        remove.addEventListener("click", () => {
+          tasks = tasks.filter(item => item.id !== task.id);
+          saveTasks();
+        });
+
+        row.append(checkbox, label, remove);
+        list.appendChild(row);
+      });
+    }
+
+    function addTask(text) {
+      const clean = text.trim();
+      if (!clean) return false;
+      tasks.unshift({ id: Date.now() + Math.random(), text: clean, done: false });
+      saveTasks();
+      return true;
+    }
+
+    function addMessage(text, role) {
+      const box = document.createElement("div");
+      box.className = "message " + role;
+
+      const label = document.createElement("div");
+      label.className = "message-label";
+      label.textContent = role === "user" ? "YOU" : "JARVIS · LOCAL MODE";
+
+      const content = document.createElement("div");
+      content.textContent = text;
+
+      box.append(label, content);
+      $("messages").appendChild(box);
+      $("messages").scrollTop = $("messages").scrollHeight;
+
+      if (role === "assistant") {
+        speakText(text);
+      }
+    }
+
+    // Text-to-speech voice controls. Keep these declarations outside speakText().
+    const voiceSelect = $("voiceSelect");
+    const testVoiceButton = $("testVoiceButton");
+    let availableVoices = [];
+
+    function loadVoices() {
+      if (!("speechSynthesis" in window) || !voiceSelect || !testVoiceButton) {
+        if (voiceSelect) voiceSelect.innerHTML = "<option value=''>Speech not supported</option>";
+        if (testVoiceButton) testVoiceButton.disabled = true;
+        return;
+      }
+
+      availableVoices = window.speechSynthesis.getVoices();
+      const previousVoice = localStorage.getItem("jarvis-selected-voice");
+      voiceSelect.replaceChildren();
+
+      const sortedVoices = [...availableVoices].sort((a, b) => {
+        const aUS = a.lang.toLowerCase() === "en-us" ? 0 : 1;
+        const bUS = b.lang.toLowerCase() === "en-us" ? 0 : 1;
+        return aUS - bUS || a.name.localeCompare(b.name);
+      });
+
+      sortedVoices.forEach((voice) => {
+        const option = document.createElement("option");
+        option.value = voice.name;
+        option.textContent = `${voice.name} (${voice.lang})`;
+        voiceSelect.appendChild(option);
+      });
+
+      if (sortedVoices.some((voice) => voice.name === previousVoice)) {
+        voiceSelect.value = previousVoice;
+      } else {
+        const preferred = sortedVoices.find((voice) =>
+          voice.lang.toLowerCase() === "en-us" &&
+          /\b(david|guy|christopher|eric|roger|mark|alex)\b/i.test(voice.name)
+        );
+        const american = sortedVoices.find(
+          (voice) => voice.lang.toLowerCase() === "en-us"
+        );
+        if (preferred || american) {
+          voiceSelect.value = (preferred || american).name;
+        }
+      }
+
+      if (sortedVoices.length === 0) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "Waiting for browser voices…";
+        voiceSelect.appendChild(option);
+      }
+    }
+
+    function speakText(text) {
+      if (
+        !("speechSynthesis" in window) ||
+        !("SpeechSynthesisUtterance" in window)
+      ) {
+        console.warn("Text-to-speech is not supported in this browser.");
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(String(text));
+      const selectedVoice = availableVoices.find(
+        (voice) => voice.name === voiceSelect.value
+      );
+
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        utterance.lang = selectedVoice.lang;
+      } else {
+        utterance.lang = "en-US";
+      }
+
+      // Slower pace and lower pitch for a calmer, cinematic delivery.
+      utterance.rate = 0.88;
+      utterance.pitch = 0.72;
+      utterance.volume = 1;
+
+      utterance.onstart = () => {
+        $("orb").classList.add("speaking");
+        $("coreLabel").textContent = "JARVIS IS SPEAKING";
+        $("systemStatus").textContent = "VOICE RESPONSE ACTIVE";
+      };
+
+      const finishSpeaking = () => {
+        $("orb").classList.remove("speaking");
+        $("coreLabel").textContent = "AWAITING YOUR COMMAND";
+        $("systemStatus").textContent = "LOCAL SYSTEM READY";
+      };
+
+      utterance.onend = finishSpeaking;
+      utterance.onerror = (event) => {
+        finishSpeaking();
+        console.warn("Speech error:", event.error);
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    loadVoices();
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
+    }
+
+    voiceSelect.addEventListener("change", () => {
+      localStorage.setItem("jarvis-selected-voice", voiceSelect.value);
+    });
+
+    testVoiceButton.addEventListener("click", () => {
+      if (!availableVoices.length) loadVoices();
+      speakText("Good day. All systems are standing by. How may I assist you?");
+    });
+
+    function localReply(raw) {
+      const command = raw.trim();
+      const lower = command.toLowerCase();
+
+      if (/^(help|commands|\?)$/.test(lower)) {
+        return "Here are the commands I can handle locally:\n• add task followed by a description\n• show tasks\n• clear completed tasks\n• what time is it?\n\nNebius-powered AI conversations will be enabled after API access is configured.";
+      }
+
+      if (lower.startsWith("add task ")) {
+        const taskText = command.slice(9).trim();
+        if (!taskText) return "Please tell me what task you'd like to add.";
+        addTask(taskText);
+        return 'Task added: "' + taskText + '"';
+      }
+
+      if (lower === "show tasks" || lower === "list tasks" || lower === "my tasks") {
+        if (!tasks.length) return "You don't have any tasks yet.";
+        return tasks.map((task, i) =>
+          (i + 1) + ". [" + (task.done ? "x" : " ") + "] " + task.text
+        ).join("\n");
+      }
+
+      if (lower === "clear completed tasks") {
+        const before = tasks.length;
+        tasks = tasks.filter(task => !task.done);
+        saveTasks();
+        return before === tasks.length
+          ? "There are no completed tasks to clear."
+          : "Completed tasks cleared.";
+      }
+
+      if (lower.includes("what time") || lower === "time" || lower.includes("current time")) {
+        return "The local time is " + new Date().toLocaleTimeString() + ".";
+      }
+
+      if (lower === "hello" || lower.startsWith("hello ") || lower === "hi" || lower.startsWith("hey")) {
+        return "Hello! I'm ready to help with local tasks. Try typing “help” to see what I can do. My full AI brain isn't connected yet.";
+      }
+
+      return "I received your command, but my Nebius AI brain isn't connected yet, so I can't answer general questions reliably. You can try “help”, “add task prepare demo”, or “show tasks”.";
+    }
+
+    $("chatForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const input = $("commandInput");
+      const text = input.value.trim();
+      if (!text) return;
+      addMessage(text, "user");
+      input.value = "";
+      $("coreLabel").textContent = "PROCESSING LOCAL COMMAND";
+      $("systemStatus").textContent = "LOCAL COMMAND";
+      const reply = localReply(text);
+      window.setTimeout(() => {
+        addMessage(reply, "assistant");
+        $("coreLabel").textContent = "AWAITING YOUR COMMAND";
+        $("systemStatus").textContent = "LOCAL SYSTEM READY";
+      }, 180);
+    });
+
+    $("taskForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const input = $("taskInput");
+      if (addTask(input.value)) {
+        addMessage('Task added: "' + input.value.trim() + '"', "assistant");
+        input.value = "";
+      }
+    });
+
+    function updateClock() {
+      $("clock").textContent = new Date().toLocaleTimeString([], {
+        hour: "2-digit", minute: "2-digit"
+      });
+    }
+    updateClock();
+    window.setInterval(updateClock, 1000);
+    renderTasks();
+
+    // Voice recognition support depends on the browser and microphone permission.
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.addEventListener("start", () => {
+        $("orb").classList.add("listening");
+        $("coreLabel").textContent = "LISTENING";
+        $("systemStatus").textContent = "MICROPHONE ACTIVE";
+        $("micButton").textContent = "Listening…";
+      });
+
+      recognition.addEventListener("result", (event) => {
+        $("commandInput").value = event.results[0][0].transcript;
+        $("chatForm").requestSubmit();
+      });
+
+      recognition.addEventListener("end", () => {
+        $("orb").classList.remove("listening");
+        $("coreLabel").textContent = "AWAITING YOUR COMMAND";
+        $("systemStatus").textContent = "LOCAL SYSTEM READY";
+        $("micButton").textContent = "🎙";
+      });
+
+      recognition.addEventListener("error", (event) => {
+        addMessage("Voice input error: " + event.error + ". Check microphone permission and try again.", "assistant");
+      });
+    }
+
+    $("micButton").addEventListener("click", () => {
+      if (!recognition) {
+        addMessage("Voice recognition isn't supported in this browser. Try a current version of Chrome or Edge, or type your command.", "assistant");
+        return;
+      }
+      try {
+        recognition.start();
+      } catch {
+        addMessage("Voice input is already starting. Please try again in a moment.", "assistant");
+      }
+    });
+  </script>
+</body>
+</html>

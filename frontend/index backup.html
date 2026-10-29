@@ -1,0 +1,128 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Hackathon Project</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f5fb;
+            color: #20243a;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: white;
+            padding: 32px;
+            border-radius: 18px;
+            box-shadow: 0 12px 40px #20243a15;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        p {
+            color: #656b7c;
+            line-height: 1.6;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 130px;
+            padding: 14px;
+            border: 1px solid #d5d9e5;
+            border-radius: 10px;
+            font: inherit;
+            resize: vertical;
+        }
+
+        button {
+            margin-top: 14px;
+            padding: 12px 20px;
+            border: 0;
+            border-radius: 9px;
+            background: #5146e5;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        #result {
+            margin-top: 22px;
+            padding: 16px;
+            background: #f3f5fb;
+            border-radius: 10px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            min-height: 55px;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <h1>My AI Hackathon Project</h1>
+        <p>
+            Welcome! This is the first version of your AI application's
+            interface. We'll connect it to an AI model next.
+        </p>
+
+        <label for="prompt"><strong>Enter a message</strong></label>
+        <textarea id="prompt"
+            placeholder="Type your message here..."></textarea>
+
+        <button id="sendButton" onclick="sendMessage()">
+            Test Backend
+        </button>
+
+        <div id="result" role="status" aria-live="polite">
+            Your result will appear here.
+        </div>
+    </main>
+
+    <script>
+        async function sendMessage() {
+            const button = document.getElementById("sendButton");
+            const result = document.getElementById("result");
+
+            button.disabled = true;
+            result.textContent = "Connecting to your backend...";
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/");
+
+                if (!response.ok) {
+                    throw new Error("Server returned HTTP " + response.status);
+                }
+
+                const data = await response.json();
+                result.textContent = data.message;
+            } catch (error) {
+                result.textContent =
+                    "Could not contact the backend. Make sure your FastAPI " +
+                    "server is running at http://127.0.0.1:8000.\n\n" +
+                    error.message;
+            } finally {
+                button.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
